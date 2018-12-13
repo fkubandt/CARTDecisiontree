@@ -6,6 +6,7 @@
 #include<fstream>
 #include<sstream>
 #include<iterator>
+#include<set>
 
 /* 
 Data Structur:
@@ -25,6 +26,8 @@ alle möglichkeiten einer kategorie in extra vektor speichern!
 
 std::vector<std::string> feature_names{};
 std::vector<std::string> feature_types{};
+// std::vector<std::set<std::string>> asdf;
+std::vector<std::set<std::string>> feature_sets; 
 
 class Dataset
 {
@@ -131,15 +134,25 @@ void save_Dataset_to_file(std::string file_name){
       only usefull after training and evaluating TESTDATA*/
 }
 
+void set_feature_set(std::vector<Dataset> &data){
+  /* collects als possible sets for each category */
+  std::string tmp;
+  int nrCat = data[0].cat_features.size();
+  feature_sets.resize(nrCat);
+  for (int  i= 0; i < data.size(); i++){     //
+    for (int j = 0; j< nrCat; j++){
+      tmp = data[i].cat_features[j];
+      feature_sets[j].insert(tmp);
+    } // j++
+  } // i++
+}
+
 
 int main(){
-  /* Do something */
   std::vector<Dataset> a;
   a = load(true, "devtesting.dat");
-  // std::cout << feature_names[0] << feature_names[1] << feature_types[0] << feature_types[1] << std::endl;
-  // std::cout << feature_types.size() << std::endl;
   a.pop_back();     //we initalize one Dataset to much so this is one was empty
-
+  set_feature_set(a);
   // Test if data is correct:
 
   std::cout << a[44].num_features[0] << std::endl;
@@ -150,5 +163,10 @@ int main(){
   std::cout << a.size() << std::endl;
   std::cout << a[46].cat_features.size() << std::endl;
   std::cout << a[46].num_features.size() << std::endl;
+  for ( auto j : feature_sets){
+    for (auto i : j)
+      std::cout << i;
+    std::cout << std::endl;
+  }
   return 0;
 }
