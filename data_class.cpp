@@ -30,12 +30,12 @@ std::vector<std::string> cat_feature_names{};
 int num_datasets{100};
 
 
-Dataset::Dataset(int nrFeatures_):nrFeatures(nrFeatures_){
+Dataset::Dataset(const int nrFeatures_):nrFeatures(nrFeatures_){
     num_features.reserve(nrFeatures);
     cat_features.reserve(nrFeatures);
   }
 
-void Dataset::set_features(const std::vector<std::string> &feature_types, std::ifstream &inputFile, const std::string &num, bool set_label){ 
+void Dataset::set_features(const std::vector<std::string> &feature_types, std::ifstream &inputFile, const std::string &num, const bool set_label){ 
   //sets all features
   double tmp_num;
   char tmp_cat;
@@ -84,7 +84,7 @@ int skipComments(std::ifstream &fileInputStream)  // passing stream by reference
 }
 
 
-std::vector<Dataset> load(bool load_label, std::string file_name){
+std::vector<Dataset> load(const bool load_label, const std::string file_name){
   /* load all features from file */
   int nrFeatures{0};
   std::ifstream inputFile;
@@ -132,7 +132,7 @@ std::vector<Dataset> load(bool load_label, std::string file_name){
   return data;
 }
 
-void save_Dataset_to_file(std::string file_name, std::vector<Dataset> &data){
+void save_Dataset_to_file(const std::string file_name, const std::vector<Dataset> &data){
   /*  save Dataset with label to file 
       only usefull after training and evaluating TESTDATA
       order of features is now different. first numerical then categorical    
@@ -158,7 +158,7 @@ void save_Dataset_to_file(std::string file_name, std::vector<Dataset> &data){
   file.close();
 }
 
-void set_feature_set(std::vector<Dataset> &data){
+void set_feature_set(const std::vector<Dataset> &data){
   /* collects als possible sets for each category */
   std::string tmp;
   int nrCat = data[0].cat_features.size();
