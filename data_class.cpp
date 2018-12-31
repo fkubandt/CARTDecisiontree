@@ -21,9 +21,13 @@ data
 alle möglichkeiten einer kategorie in extra vektor speichern!
 */
 
+//      global variables
 std::vector<std::string> feature_names{};
 std::vector<std::string> feature_types{};
-std::vector<std::set<std::string>> feature_sets{}; 
+std::vector<std::set<std::string>> feature_sets{};
+std::vector<std::string> num_feature_names{};     //for saving in correct order
+std::vector<std::string> cat_feature_names{};
+int num_datasets{100};
 
 
 Dataset::Dataset(int nrFeatures_):nrFeatures(nrFeatures_){
@@ -43,13 +47,19 @@ void Dataset::set_features(const std::vector<std::string> &feature_types, std::i
   std::istringstream iline(line);
   for(int i = 0; i<nrFeatures;i++){
     getline(iline, tmp, ',');
-    if (feature_types[i] == num)
-      if (tmp =="?")        //"?"" stands for no value!!
+    if (feature_types[i] == num){
+      if (tmp =="?"){        //"?"" stands for no value!!
         num_features.push_back(-1.);
-       else
-         num_features.push_back(atof(tmp.c_str()));
-     else
-       cat_features.push_back(tmp.c_str()[0]);
+      }
+      else{
+        num_features.push_back(atof(tmp.c_str()));
+      }
+      //num_feature_names.push_back(feature_names[i]);
+    }
+    else{
+      cat_features.push_back(tmp.c_str()[0]);
+      //cat_feature_names.push_back(feature_names[i]);
+    }
    }
    if(set_label){
      getline(iline, tmp, ',');
@@ -103,9 +113,15 @@ std::vector<Dataset> load(bool load_label, std::string file_name){
       getline(iline, tmp, ',');
       feature_types.push_back(tmp);
     }
+  for(int i = 0; i < feature_types.size(); i++){
+    if (feature_types[i] == numerical_token)
+      num_feature_names.push_back(feature_names[i]);
+    else
+      cat_feature_names.push_back(feature_names[i]);
+  }
 
   std::vector<Dataset> data{};
-  data.reserve(100); //        !input length of datafile!
+  data.reserve(num_datasets); //        !input length of datafile!
   while(!inputFile.eof()){
     Dataset a(nrFeatures);
     a.set_features(feature_types, inputFile ,numerical_token ,load_label);
@@ -116,9 +132,30 @@ std::vector<Dataset> load(bool load_label, std::string file_name){
   return data;
 }
 
-void save_Dataset_to_file(std::string file_name){
+void save_Dataset_to_file(std::string file_name, std::vector<Dataset> &data){
   /*  save Dataset with label to file 
-      only usefull after training and evaluating TESTDATA*/
+      only usefull after training and evaluating TESTDATA
+      order of features is now different. first numerical then categorical    
+  */
+  std::ofstream file;
+  file.open(file_name);
+  file << num_feature_names[0];
+  for(int i = 1; i<num_feature_names.size(); i++){
+    file << "," << num_feature_names[i];
+  }
+  file << cat_feature_names[0];
+  for(int i = 1; i<cat_feature_names.size(); i++){
+    file << "," << cat_feature_names[i];
+  }
+  file << "," << "label" <<std::endl;
+  for(auto i:data){
+    for(auto j:i.num_features)
+      file << j << ",";
+    for (auto j : i.cat_features)
+      file << j << ",";
+    file << i.label << std::endl;
+  }
+  file.close();
 }
 
 void set_feature_set(std::vector<Dataset> &data){

@@ -23,7 +23,7 @@ class Dataset
 
 int skipComments(std::ifstream &fileInputStream);
 std::vector<Dataset> load(bool load_label, std::string file_name);
-void save_Dataset_to_file(std::string file_name);
+void save_Dataset_to_file(std::string file_name, std::vector<Dataset> &data);
 void set_feature_set(std::vector<Dataset> &data);
 
 //      global variabels

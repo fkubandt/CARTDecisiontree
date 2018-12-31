@@ -10,6 +10,9 @@
 extern std::vector<std::string> feature_names;
 extern std::vector<std::string> feature_types;
 extern std::vector<std::set<std::string>> feature_sets;
+extern std::vector<std::string> num_feature_names;     //for saving in correct order
+extern std::vector<std::string> cat_feature_names;
+bool save_file = false;
 
 int main(){
   std::vector<Dataset> a;
@@ -30,5 +33,7 @@ int main(){
       std::cout << i;
     std::cout << std::endl;
   }
+  if (save_file)
+    save_Dataset_to_file("abc.dat", a);
   return 0;
 }
