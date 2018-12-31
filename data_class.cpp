@@ -1,12 +1,11 @@
 #include<iostream>
-#include<map>
 #include<vector>
-#include<valarray>
 #include<string>
 #include<fstream>
 #include<sstream>
 #include<iterator>
 #include<set>
+#include"data_class.h"
 
 /* 
 Data Structur:
@@ -22,58 +21,44 @@ data
 alle möglichkeiten einer kategorie in extra vektor speichern!
 */
 
-
-
 std::vector<std::string> feature_names{};
 std::vector<std::string> feature_types{};
-// std::vector<std::set<std::string>> asdf;
-std::vector<std::set<std::string>> feature_sets; 
+std::vector<std::set<std::string>> feature_sets{}; 
 
-class Dataset
-{
-  public:
-  const int nrFeatures{};
-  std::vector<double> num_features{};
-  std::vector<char> cat_features{};
-  char label{};
-  //Constructor sets size of vectors
-  Dataset(int nrFeatures_):nrFeatures(nrFeatures_){
+
+Dataset::Dataset(int nrFeatures_):nrFeatures(nrFeatures_){
     num_features.reserve(nrFeatures);
     cat_features.reserve(nrFeatures);
   }
 
-  void set_features(std::vector<std::string> feature_types, std::ifstream &inputFile, bool set_label){ 
-    //d for double, c for category
-    //sets all features
-    double tmp_num;
-    char tmp_cat;
-    std::string tmp, line;
-    std::string num = "num";
+void Dataset::set_features(const std::vector<std::string> &feature_types, std::ifstream &inputFile, const std::string &num, bool set_label){ 
+  //sets all features
+  double tmp_num;
+  char tmp_cat;
+  std::string tmp, line;
+  // std::string num = "num";
 
 
-    std::getline(inputFile, line);
-    std::istringstream iline(line);
-    for(int i = 0; i<nrFeatures;i++){
-      getline(iline, tmp, ',');
-      if (feature_types[i] == num)
-        if (tmp =="?")        //"?"" stands for no value!!
-          num_features.push_back(-1.);
-        else
-          num_features.push_back(atof(tmp.c_str()));
-      else
-        cat_features.push_back(tmp.c_str()[0]);
-    }
-    if(set_label){
-      getline(iline, tmp, ',');
-      label = tmp.c_str()[0];
-    }
+  std::getline(inputFile, line);
+  std::istringstream iline(line);
+  for(int i = 0; i<nrFeatures;i++){
+    getline(iline, tmp, ',');
+    if (feature_types[i] == num)
+      if (tmp =="?")        //"?"" stands for no value!!
+        num_features.push_back(-1.);
+       else
+         num_features.push_back(atof(tmp.c_str()));
+     else
+       cat_features.push_back(tmp.c_str()[0]);
+   }
+   if(set_label){
+     getline(iline, tmp, ',');
+     label = tmp.c_str()[0];
+   }
 
- 
-    num_features.shrink_to_fit();
-    cat_features.shrink_to_fit();
-  }
-
-};
+   num_features.shrink_to_fit();
+   cat_features.shrink_to_fit();
+ }
 
 int skipComments(std::ifstream &fileInputStream)  // passing stream by reference
 {
@@ -99,6 +84,7 @@ std::vector<Dataset> load(bool load_label, std::string file_name){
   printf("nrFeatures: %d\n",nrFeatures);
   std::string tmp;
   std::string line;
+  std::string numerical_token = "num";
   
   inputFile.ignore(INT8_MAX, '\n');
   std::getline(inputFile, line);
@@ -122,11 +108,12 @@ std::vector<Dataset> load(bool load_label, std::string file_name){
   data.reserve(100); //        !input length of datafile!
   while(!inputFile.eof()){
     Dataset a(nrFeatures);
-    a.set_features(feature_types, inputFile, load_label);
+    a.set_features(feature_types, inputFile ,numerical_token ,load_label);
     data.push_back(a);
   } 
+  inputFile.close();
+  data.pop_back();     //we initalize one Dataset to much so this is one was empty
   return data;
-inputFile.close();
 }
 
 void save_Dataset_to_file(std::string file_name){
@@ -145,28 +132,4 @@ void set_feature_set(std::vector<Dataset> &data){
       feature_sets[j].insert(tmp);
     } // j++
   } // i++
-}
-
-
-int main(){
-  std::vector<Dataset> a;
-  a = load(true, "devtesting.dat");
-  a.pop_back();     //we initalize one Dataset to much so this is one was empty
-  set_feature_set(a);
-  // Test if data is correct:
-
-  std::cout << a[44].num_features[0] << std::endl;
-  // int b;
-  // std::cin >> b;
-  std::cout << a[46].cat_features[0] << std::endl;
-  std::cout << a[0].label << std::endl;
-  std::cout << a.size() << std::endl;
-  std::cout << a[46].cat_features.size() << std::endl;
-  std::cout << a[46].num_features.size() << std::endl;
-  for ( auto j : feature_sets){
-    for (auto i : j)
-      std::cout << i;
-    std::cout << std::endl;
-  }
-  return 0;
 }
