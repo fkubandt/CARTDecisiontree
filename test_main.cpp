@@ -1,4 +1,5 @@
 #include"data_class.h"
+#include "decisiontree.h"
 #include<iostream>
 #include<vector>
 #include<string>
@@ -6,26 +7,40 @@
 #include<sstream>
 #include<iterator>
 #include<set>
+#include<numeric>
 
-/* extern std::vector<std::string> feature_names;
-extern std::vector<std::string> feature_types;
-extern std::vector<std::set<std::string>> feature_sets;
-extern std::vector<std::set<float>> numerical_sets;
-extern std::vector<std::string> num_feature_names;     //for saving in correct order
-extern std::vector<std::string> cat_feature_names; */
 bool save_file = false;
 
 int main(){
+  int nTest=40; 
+  std::vector<int> traindata(nTest);
+  std::vector<int>testdata;
+
   std::vector<Dataset> a;
   a = load_Dataset_from_file(true, "devtesting.dat");
   set_feature_set(a);
   set_numerical_set(a);
-  // Test if data is correct:
 
+  std::cout << a[5].num_features.size() << std::endl;
+  // Test if data is correct:
+  //Decisiontree::data = a;
+  Decisiontree* mytree = new Decisiontree(a);
+  std::iota(traindata.begin(), traindata.end(), 0);
+  for(auto i : traindata){
+    std::cout << i << " " ;
+    std::cout << a[i].label << std::endl;
+  }
+  std::cout << std::endl;
+
+  mytree->train(traindata, 5);
+
+
+  std::cout << "trained" << std::endl;
 /* 
   int x = 0;
   std::cin >> x; 
 */
+/*
   std::cout << a[44].num_features[0] << std::endl;
   // int b;
   // std::cin >> b;
@@ -39,6 +54,7 @@ int main(){
       std::cout << i;
     std::cout << std::endl;
   }
+  */
   if (save_file)
     save_Dataset_to_file("abc.dat", a);
   return 0;

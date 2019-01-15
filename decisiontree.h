@@ -22,9 +22,9 @@
 
 class Decisiontree
 {
-    private:
-    const std::vector<int> dataslice;
-    static std::vector<Dataset> data;  //TODO: for recursive functions, we do not pass data but the set of indices in dataslice -> transform functions?
+    public:
+    std::vector<int> dataslice;
+     std::vector<Dataset> data;  
     //separation information:
     Decisiontree* leftchild;
     Decisiontree* rightchild;
@@ -43,13 +43,14 @@ class Decisiontree
     const char label = '+'; 
     //
     // Member Functions 
-    Decisiontree(int depth, std::vector<int> dataslice);
+    Decisiontree(int depth, std::vector<int> dataslice, std::vector<Dataset> data);
+    Decisiontree(std::vector<Dataset> data);
     Decisiontree();
     ~Decisiontree();   
     float gini_impurity(std::vector<int> data_indices) const;
     void max_information_gain(std::vector<int> data_indices);
     void train(std::vector<int> data_indices, float min_gini);
-    void train(std::vector<Dataset> data, int min_data_at_leaf);
+    void train(std::vector<int> data_indices, int min_instances_at_leaf);
     //
     char predict(const Dataset &data);
     char predict(const Dataset &data, float &certainty_);

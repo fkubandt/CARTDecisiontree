@@ -11,7 +11,7 @@
 class Dataset
 {
   public:
-  const int nrFeatures{};
+  int nrFeatures{};
   std::vector<double> num_features{};
   std::vector<char> cat_features{};
   char label{};
