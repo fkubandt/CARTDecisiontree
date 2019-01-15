@@ -18,7 +18,6 @@
 #include <set>
 #include <vector>
 
-#include "node.h"
 #include "data_class.h"
 
 class Decisiontree
@@ -27,8 +26,8 @@ class Decisiontree
     const std::vector<int> dataslice;
     static std::vector<Dataset> data;  //TODO: for recursive functions, we do not pass data but the set of indices in dataslice -> transform functions?
     //separation information:
-    const Decisiontree* leftchild;
-    const Decisiontree* rightchild;
+    Decisiontree* leftchild;
+    Decisiontree* rightchild;
     char sep_feature_type;
     int sep_feature_index;
     char sep_category_flag = '0';
@@ -45,10 +44,11 @@ class Decisiontree
     //
     // Member Functions 
     Decisiontree(int depth, std::vector<int> dataslice);
+    Decisiontree();
     ~Decisiontree();   
     float gini_impurity(std::vector<int> data_indices) const;
     void max_information_gain(std::vector<int> data_indices);
-    void train(std::vector<Dataset> data, float min_gini);
+    void train(std::vector<int> data_indices, float min_gini);
     void train(std::vector<Dataset> data, int min_data_at_leaf);
     //
     bool predict(Dataset data);
