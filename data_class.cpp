@@ -21,13 +21,15 @@ data
 alle möglichkeiten einer kategorie in extra vektor speichern!
 */
 
-//      global variables
-std::vector<std::string> feature_names{};
-std::vector<std::string> feature_types{};
-std::vector<std::set<std::string>> feature_sets{};
-std::vector<std::string> num_feature_names{};     //for saving in correct order
-std::vector<std::string> cat_feature_names{};
-int num_datasets{100};
+//      initalize static class variables
+std::vector<std::string> Dataset::feature_names{};
+std::vector<std::string> Dataset::feature_types{};
+std::vector<std::set<std::string>> Dataset::feature_sets{};    // set with all possible feature values
+std::vector<std::set<float>> Dataset::numerical_sets{};  // set with all possible numerical values
+std::vector<std::string> Dataset::num_feature_names{};     //for saving in correct order
+std::vector<std::string> Dataset::cat_feature_names{};
+
+int Dataset::nrDatasets{100};  //Number of Datasets just to boost the code
 
 
 Dataset::Dataset(const int nrFeatures_):nrFeatures(nrFeatures_){
@@ -35,7 +37,7 @@ Dataset::Dataset(const int nrFeatures_):nrFeatures(nrFeatures_){
     cat_features.reserve(nrFeatures);
   }
 
-void Dataset::set_features(const std::vector<std::string> &feature_types, std::ifstream &inputFile, const std::string &num, const bool set_label){ 
+void Dataset::set_features(std::ifstream &inputFile, const std::string &num, const bool set_label){ 
   //sets all features
   double tmp_num;
   char tmp_cat;
@@ -47,7 +49,7 @@ void Dataset::set_features(const std::vector<std::string> &feature_types, std::i
   std::istringstream iline(line);
   for(int i = 0; i<nrFeatures;i++){
     getline(iline, tmp, ',');
-    if (feature_types[i] == num){
+    if (Dataset::feature_types[i] == num){
       if (tmp =="?"){        //"?"" stands for no value!!
         num_features.push_back(-1.);
       }
@@ -84,7 +86,7 @@ int skipComments(std::ifstream &fileInputStream)  // passing stream by reference
 }
 
 
-std::vector<Dataset> load(const bool load_label, const std::string file_name){
+std::vector<Dataset> load_Dataset_from_file(const bool load_label, const std::string file_name){
   /* load all features from file */
   int nrFeatures{0};
   std::ifstream inputFile;
@@ -101,7 +103,7 @@ std::vector<Dataset> load(const bool load_label, const std::string file_name){
   std::istringstream iline(line);
   for(int i = 0; i<nrFeatures;i++){
       getline(iline, tmp, ',');
-      feature_names.push_back(tmp);
+      Dataset::feature_names.push_back(tmp);
     }
 
   line.clear();
@@ -111,20 +113,20 @@ std::vector<Dataset> load(const bool load_label, const std::string file_name){
 
   for(int i = 0; i<nrFeatures;i++){
       getline(iline, tmp, ',');
-      feature_types.push_back(tmp);
+      Dataset::feature_types.push_back(tmp);
     }
-  for(int i = 0; i < feature_types.size(); i++){
-    if (feature_types[i] == numerical_token)
-      num_feature_names.push_back(feature_names[i]);
+  for(int i = 0; i < Dataset::feature_types.size(); i++){
+    if (Dataset::feature_types[i] == numerical_token)
+      Dataset::num_feature_names.push_back(Dataset::feature_names[i]);
     else
-      cat_feature_names.push_back(feature_names[i]);
+      Dataset::cat_feature_names.push_back(Dataset::feature_names[i]);
   }
 
   std::vector<Dataset> data{};
-  data.reserve(num_datasets); //        !input length of datafile!
+  data.reserve(Dataset::nrDatasets); //        !input length of datafile!
   while(!inputFile.eof()){
     Dataset a(nrFeatures);
-    a.set_features(feature_types, inputFile ,numerical_token ,load_label);
+    a.set_features(inputFile ,numerical_token ,load_label);
     data.push_back(a);
   } 
   inputFile.close();
@@ -139,13 +141,13 @@ void save_Dataset_to_file(const std::string file_name, const std::vector<Dataset
   */
   std::ofstream file;
   file.open(file_name);
-  file << num_feature_names[0];
-  for(int i = 1; i<num_feature_names.size(); i++){
-    file << "," << num_feature_names[i];
+  file << Dataset::num_feature_names[0];
+  for(int i = 1; i<Dataset::num_feature_names.size(); i++){
+    file << "," << Dataset::num_feature_names[i];
   }
-  file << cat_feature_names[0];
-  for(int i = 1; i<cat_feature_names.size(); i++){
-    file << "," << cat_feature_names[i];
+  file << Dataset::cat_feature_names[0];
+  for(int i = 1; i<Dataset::cat_feature_names.size(); i++){
+    file << "," << Dataset::cat_feature_names[i];
   }
   file << "," << "label" <<std::endl;
   for(auto i:data){
@@ -159,14 +161,27 @@ void save_Dataset_to_file(const std::string file_name, const std::vector<Dataset
 }
 
 void set_feature_set(const std::vector<Dataset> &data){
-  /* collects als possible sets for each category */
+  /* collects als possible sets for each feature category */
   std::string tmp;
   int nrCat = data[0].cat_features.size();
-  feature_sets.resize(nrCat);
+  Dataset::feature_sets.resize(nrCat);
   for (int  i= 0; i < data.size(); i++){     //
     for (int j = 0; j< nrCat; j++){
       tmp = data[i].cat_features[j];
-      feature_sets[j].insert(tmp);
+      Dataset::feature_sets[j].insert(tmp);
+    } // j++
+  } // i++
+}
+
+void set_numerical_set(const std::vector<Dataset> &data){
+  /* collects als possible sets for each numerical category */
+  float tmp=0.;
+  int nrCat = data[0].num_features.size();
+  Dataset::numerical_sets.resize(nrCat);
+  for (int  i= 0; i < data.size(); i++){     //
+    for (int j = 0; j< nrCat; j++){
+      tmp = data[i].num_features[j];
+      Dataset::numerical_sets[j].insert(tmp);
     } // j++
   } // i++
 }
