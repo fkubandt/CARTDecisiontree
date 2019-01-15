@@ -51,9 +51,9 @@ class Decisiontree
     void train(std::vector<int> data_indices, float min_gini);
     void train(std::vector<Dataset> data, int min_data_at_leaf);
     //
-    bool predict(Dataset data);
-    bool predict(Dataset data, float &certainty_);
-
+    char predict(const Dataset &data);
+    char predict(const Dataset &data, float &certainty_);
+    bool is_in_left_child(const Dataset &data);
 
     //void split_dataset(float* dataset);       //make more readable?                                               
     //TODO: void save(std::string filename) const;

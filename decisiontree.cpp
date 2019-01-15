@@ -191,3 +191,47 @@ void Decisiontree::train(std::vector<int> data_indices, float min_gini){
     }// if pos prediction
   } // gini_imp <= min_gini
 }; //train
+
+char Decisiontree::predict(const Dataset &data){
+  if (is_leaf){
+    return prediction;
+  }
+  else{
+    if (is_in_left_child(data))
+      leftchild->predict(data);
+    else
+      rightchild->predict(data);
+  }
+}
+
+char Decisiontree::predict(const Dataset &data, float &certainty_){
+  if (is_leaf){
+    certainty_ = certainty;
+    return prediction;
+  }
+  else{
+    if (is_in_left_child(data))
+      leftchild->predict(data);
+    else
+      rightchild->predict(data);
+  }
+}
+
+bool Decisiontree::is_in_left_child(const Dataset &data){
+  if (sep_feature_type == 'c'){
+    if (data.cat_features[sep_feature_index] == sep_category_flag)
+      return true;
+    else
+      return false; 
+  }
+  else{
+    if (data.num_features[sep_feature_index] <= sep_threshold)
+      return true
+    else
+      return false
+  }
+}
+/* 
+links ist kleiner gleich
+links ist wahr
+*/
