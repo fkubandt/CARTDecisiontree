@@ -19,19 +19,43 @@
 #include <vector>
 
 #include "node.h"
+#include "data_class.h"
 
 class Decisiontree
 {
-    float gini_impurity(float* dataset, const int num_features, const int num_data) const;
-    void split_dataset(float* dataset);       
-                                              
-    void evaluate_all_splits(float* dataset, const int num_features, const int num_data);
-                                              
-    void build_tree(float* dataset, const int num_features, const int num_data, const int max_depth, 
-                    const int min_features); 
-                                             
-    char predict(float* dataset, const int num_features, const int num_data);
-                                              
-    void save(std::string filename) const;
-    int load(std::string filename, float* dataset);
+    private:
+    const std::vector<int> dataslice;
+    static std::vector<Dataset> data;  //TODO: for recursive functions, we do not pass data but the set of indices in dataslice -> transform functions?
+    //separation information:
+    const Decisiontree* leftchild;
+    const Decisiontree* rightchild;
+    char sep_feature_type;
+    int sep_feature_index;
+    char sep_category_flag = '0';
+    float sep_threshold = 0.;
+    //prediction information, for leaves only
+    float certainty = 0.;
+    char prediction = '0';
+    float gini_imp;
+    //
+    public:
+    int depth = 0;
+    bool is_leaf = false;
+    const char label = '+'; 
+    //
+    // Member Functions 
+    Decisiontree(int depth, std::vector<int> dataslice);
+    ~Decisiontree();   
+    float gini_impurity(std::vector<int> data_indices) const;
+    void max_information_gain(std::vector<int> data_indices);
+    void train(std::vector<Dataset> data, float min_gini);
+    void train(std::vector<Dataset> data, int min_data_at_leaf);
+    //
+    bool predict(Dataset data);
+    bool predict(Dataset data, float &certainty_);
+
+
+    //void split_dataset(float* dataset);       //make more readable?                                               
+    //TODO: void save(std::string filename) const;
+    //TODO: int load(std::string filename, float* dataset);
 };
