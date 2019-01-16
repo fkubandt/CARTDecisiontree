@@ -56,6 +56,9 @@ class Decisiontree
     char predict(const Dataset &data, float &certainty_);
     bool is_in_left_child(const Dataset &data);
 
+    //for testing
+    float gini_impurity_of_all_leaves();
+
     //void split_dataset(float* dataset);       //make more readable?                                               
     //TODO: void save(std::string filename) const;
     //TODO: int load(std::string filename, float* dataset);

@@ -106,11 +106,13 @@ void Decisiontree::max_information_gain(std::vector<int> data_indices){
           right_data.push_back(idata);
         }
       } // data iteration
-      p_left = left_data.size()/ntotal_data;
-      p_right = right_data.size()/ntotal_data;
+      p_left = (double)left_data.size()/ntotal_data;
+      p_right = (double)right_data.size()/ntotal_data;
       if(left_data.size() != 0 and right_data.size() != 0){
         information_gain = impurity_parent - p_left*gini_impurity(left_data) - p_right*gini_impurity(right_data);
-        std::cout << "information gain " << information_gain << std::endl;
+        std::cout << "information gain " << information_gain << " for gain = " << impurity_parent
+        << "-" << p_left << "*" << gini_impurity(left_data) << " - " << p_right << "*" << gini_impurity(right_data) << std::endl
+        << "nleft = " << left_data.size() << std::endl;
         if(information_gain > best_information_gain){
          best_information_gain = information_gain;
          best_feature = ifeatures;
@@ -318,3 +320,19 @@ bool Decisiontree::is_in_left_child(const Dataset &data){
 links ist kleiner gleich
 links ist wahr
 */
+
+//for testing purposes
+float Decisiontree::gini_impurity_of_all_leaves(){
+  float full_gini = 0;
+  if (is_leaf == true){
+    int n = dataslice.size();
+    int n_tot = data.size();
+    float p = (double) n/n_tot;
+    return p*gini_impurity(dataslice);
+  }
+  else{
+    full_gini += leftchild->gini_impurity_of_all_leaves();
+    full_gini += rightchild->gini_impurity_of_all_leaves();
+  }
+  return full_gini;
+}
