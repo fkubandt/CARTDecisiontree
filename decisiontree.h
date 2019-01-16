@@ -17,6 +17,8 @@
 #include <string>
 #include <set>
 #include <vector>
+#include <fstream>
+#include <iostream>
 
 #include "data_class.h"
 
@@ -28,13 +30,13 @@ class Decisiontree
     //separation information:
     Decisiontree* leftchild;
     Decisiontree* rightchild;
-    char sep_feature_type;
-    int sep_feature_index;
-    char sep_category_flag = '0';
+    char sep_feature_type='x';
+    int sep_feature_index=-1;
+    char sep_category_flag = 'x';
     float sep_threshold = 0.;
     //prediction information, for leaves only
     float certainty = 0.;
-    char prediction = '0';
+    char prediction = 'x';
     float gini_imp;
     //
     public:
@@ -55,6 +57,9 @@ class Decisiontree
     char predict(const Dataset &data);
     char predict(const Dataset &data, float &certainty_);
     bool is_in_left_child(const Dataset &data);
+
+    void save(std::string filename);
+    void save_to_file(std::ofstream &file);
 
     //void split_dataset(float* dataset);       //make more readable?                                               
     //TODO: void save(std::string filename) const;

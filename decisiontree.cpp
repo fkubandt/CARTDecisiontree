@@ -56,7 +56,7 @@ void Decisiontree::max_information_gain(std::vector<int> data_indices){
    * to find max(I_G,parent - p_left * I_G,left - p_right * I_G,right)
    * with p_i = numdata_i/numdata_parent
    *                                          */
-
+  //sep_feature_type ='t';
   std::cout << "maximize the information gain ....." << std::endl;
   float information_gain = 0;
   float best_information_gain = 0;
@@ -92,12 +92,10 @@ void Decisiontree::max_information_gain(std::vector<int> data_indices){
     this_features_values = possible_values[ifeatures];
     //num_thresholds = this_features_values.size();
     for(auto ithresholds : this_features_values){
-    //for (std::set<float>::iterator ithresholds=this_features_values.begin(); ithresholds!=this_features_values.end(); ithresholds++){
       threshold = ithresholds;
       left_data.clear();
       right_data.clear();
       for (auto idata : data_indices){
-      //for (std::vector<int>::iterator idata = data_indices.begin(); idata!=data_indices.end(); idata++){
         Dataset thisdata=data[idata];
         if (thisdata.num_features[ifeatures] <= threshold){
           left_data.push_back(idata);
@@ -106,8 +104,8 @@ void Decisiontree::max_information_gain(std::vector<int> data_indices){
           right_data.push_back(idata);
         }
       } // data iteration
-      p_left = left_data.size()/ntotal_data;
-      p_right = right_data.size()/ntotal_data;
+      p_left = (double)left_data.size()/ntotal_data;
+      p_right = (double)right_data.size()/ntotal_data;
       if(left_data.size() != 0 and right_data.size() != 0){
         information_gain = impurity_parent - p_left*gini_impurity(left_data) - p_right*gini_impurity(right_data);
         std::cout << "information gain " << information_gain << std::endl;
@@ -128,12 +126,10 @@ void Decisiontree::max_information_gain(std::vector<int> data_indices){
     this_features_categories = possible_categories[ifeatures];
     num_thresholds = this_features_categories.size();
     for(auto ithresholds : this_features_categories){
-    //for (std::set<std::string>::iterator ithresholds=this_features_categories.begin(); ithresholds!=this_features_categories.end(); ithresholds++){
       std::string flag = ithresholds;
       left_data.clear();
       right_data.clear();
       for (auto idata : data_indices){
-      //for (std::vector<int>::iterator idata = data_indices.begin(); idata!=data_indices.end(); idata++){
         Dataset thisdata=data[idata];
         if (thisdata.cat_features[ifeatures] == flag[0])      //TODO: decide between string and char!
           left_data.push_back(idata);
@@ -176,7 +172,6 @@ void Decisiontree::train(std::vector<int> data_indices, float min_gini){
     //split data (for readability in own function?)
     if(sep_feature_type == 'n'){
       for (auto idata : data_indices){
-      //for (std::vector<int>::iterator idata = data_indices.begin(); idata!=data_indices.end(); idata++){
         Dataset thisdata=data[idata];
         if (thisdata.num_features[sep_feature_index] <= sep_threshold)      //TODO: decide between string and char!
           left_data.push_back(idata);
@@ -186,8 +181,7 @@ void Decisiontree::train(std::vector<int> data_indices, float min_gini){
     } // seperate by numeric
     else if(sep_feature_type == 'c'){
       for (auto idata : data_indices){
-      //for (std::vector<int>::iterator idata = data_indices.begin(); idata!=data_indices.end(); idata++){
-        Dataset thisdata=data[idata];
+        Dataset thisdata=data[idata]; 
         if (thisdata.cat_features[sep_feature_index] ==sep_category_flag)      
           left_data.push_back(idata);
         else
@@ -287,6 +281,10 @@ char Decisiontree::predict(const Dataset &data){
   }
 }
 
+/* 
+links ist kleiner gleich
+links ist wahr
+*/
 char Decisiontree::predict(const Dataset &data, float &certainty_){
   if (is_leaf){
     certainty_ = certainty;
@@ -314,7 +312,24 @@ bool Decisiontree::is_in_left_child(const Dataset &data){
       return false;
   }
 }
-/* 
-links ist kleiner gleich
-links ist wahr
-*/
+
+void Decisiontree::save(std::string filename){
+  std::ofstream file;
+  file.open(filename);
+  std::cout << "saving tree...\n";
+  file << "depth, is_leaf, sep_feature_type, sep_feature_index, sep_threshold, sep_category_flag, prediction, certainty\n";
+  save_to_file(file);
+  file.close();
+  std::cout << "completed\n";
+}
+
+void Decisiontree::save_to_file(std::ofstream &file){
+  std::cout << sep_feature_type << std::endl;
+  file << depth <<", " << is_leaf <<", " << sep_feature_type <<", " << sep_feature_index;
+  file  <<", " << sep_threshold <<", " << sep_category_flag <<", " << prediction;
+  file  <<", " << certainty << std::endl;
+  if (!is_leaf){
+    leftchild->save_to_file(file);
+    rightchild->save_to_file(file);
+  }
+}
