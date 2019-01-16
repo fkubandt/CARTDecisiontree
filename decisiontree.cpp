@@ -314,7 +314,6 @@ bool Decisiontree::is_in_left_child(const Dataset &data){
       return false;
   }
 }
-<<<<<<< HEAD
 
 void Decisiontree::save(std::string filename){
   std::ofstream file;
@@ -335,7 +334,6 @@ void Decisiontree::save_to_file(std::ofstream &file){
     leftchild->save_to_file(file);
     rightchild->save_to_file(file);
   }
-=======
 /* 
 links ist kleiner gleich
 links ist wahr
@@ -355,5 +353,4 @@ float Decisiontree::gini_impurity_of_all_leaves(){
     full_gini += rightchild->gini_impurity_of_all_leaves();
   }
   return full_gini;
->>>>>>> refs/remotes/origin/testing
 }

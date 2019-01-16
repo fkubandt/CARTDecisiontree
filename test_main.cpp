@@ -46,17 +46,14 @@ int main(){
   // Test if data is correct:
   //Decisiontree::data = a;
 
-<<<<<<< HEAD
   Decisiontree* mytree = new Decisiontree(a);
   mytree->train(traindata, 5);
-=======
-  mytree->train(traindata, 10);
+  //mytree->train(traindata, 10);
 
   float gini = mytree->gini_impurity_of_all_leaves();
 
   std::cout << "gini at node " << mytree->gini_imp << std::endl;
   std::cout << "gini of all leaves " << gini << std::endl;
->>>>>>> refs/remotes/origin/testing
   std::cout << "trained" << std::endl;
   for (auto i:testdata){
     std::cout << "Label für Person" << i <<": "<<a[i].label <<std::endl;
