@@ -60,6 +60,8 @@ class Decisiontree
 
     void save(std::string filename);
     void save_to_file(std::ofstream &file);
+    //for testing
+    float gini_impurity_of_all_leaves();
 
     //void split_dataset(float* dataset);       //make more readable?                                               
     //TODO: void save(std::string filename) const;
