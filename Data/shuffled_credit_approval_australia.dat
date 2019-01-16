@@ -10,9 +10,11 @@
 # Labeled:          +/-
 #
 # Missing Values:   yes
-#
-# gender, age, debt, marital, bank, eudcation, ethnicity, years_employment, prior_default, employment, creditscore, driverslicense, citizen, zip, income, approved
-# cat, num, num, cat, cat, cat, cat, num, cat, cat, num, cat, cat, num, num, class
+# one blank row is needed!!
+
+15
+gender,age,debt,marital,bank,eudcation,ethnicity,years_employment,prior_default,employment,creditscore,driverslicense,citizen,zip,income,approved
+cat,num,num,cat,cat,cat,cat,num,cat,cat,num,cat,cat,num,num,class
 b,35.17,2.5,u,g,k,v,4.5,t,t,07,f,g,00150,1270,+
 a,21.75,11.75,u,g,c,v,0.25,f,f,0,t,g,00180,0,-
 b,17.08,3.29,u,g,i,v,0.335,f,f,0,t,g,00140,2,-
