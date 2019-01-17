@@ -18,7 +18,9 @@
 extern bool testing;
 //
 
+
 Decisiontree::Decisiontree(int depth, std::vector<int> dataslice, std::vector<Dataset> data):depth(depth), dataslice(dataslice), data(data){};
+
 
 Decisiontree::Decisiontree(std::vector<Dataset> data_){
   depth = 0;
@@ -31,7 +33,7 @@ Decisiontree::Decisiontree(std::vector<Dataset> data_){
   }
 }
 
-float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
+  float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
   /* 
    * calculate the gini impurity I_G for binary classes +/- as 
    * I_G = p_+(1-p_+) + p_-(1-p_-) = 2*p_+(1-p_+) 
@@ -53,7 +55,8 @@ float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
   return 2*p_positives*(1-p_positives);
 }
 
-void Decisiontree::max_information_gain(std::vector<int> data_indices){
+
+  void Decisiontree::max_information_gain(std::vector<int> data_indices){
   /*
    * Iterates over all possible features and thresholds and maximizes 
    * to find max(I_G,parent - p_left * I_G,left - p_right * I_G,right)
@@ -94,7 +97,6 @@ void Decisiontree::max_information_gain(std::vector<int> data_indices){
     std::cout << "looking for numerical separation" << data[0].num_features.size() << std::endl;
   for (int ifeatures=0; ifeatures<nfeatures; ifeatures++){
     this_features_values = possible_values[ifeatures];
-    //num_thresholds = this_features_values.size();
     for(auto ithresholds : this_features_values){
       threshold = ithresholds;
       left_data.clear();
@@ -168,116 +170,7 @@ void Decisiontree::max_information_gain(std::vector<int> data_indices){
   } // category flag
   if (testing)
     std::cout << "information gain maximized to ....." << best_information_gain << std::endl; 
-}
-
-void Decisiontree::train(std::vector<int> data_indices, float min_gini){
-  std::cout << "start training on depth " << depth << " ....." << std::endl;
-  gini_imp = gini_impurity(data_indices);
-
-  //int ndata = data.size();
-  std::vector<int> left_data;
-  std::vector<int> right_data;
-  if(gini_imp > min_gini){
-    max_information_gain(data_indices);
-    //split data (for readability in own function?)
-    if(sep_feature_type == 'n'){
-      for (auto idata : data_indices){
-        Dataset thisdata=data[idata];
-        if (thisdata.num_features[sep_feature_index] <= sep_threshold)      //TODO: decide between string and char!
-          left_data.push_back(idata);
-        else
-          right_data.push_back(idata);
-      } // iterate over data
-    } // seperate by numeric
-    else if(sep_feature_type == 'c'){
-      for (auto idata : data_indices){
-        Dataset thisdata=data[idata]; 
-        if (thisdata.cat_features[sep_feature_index] ==sep_category_flag)      
-          left_data.push_back(idata);
-        else
-          right_data.push_back(idata);
-      } // iterate over data
-    } // seperate by category
-    leftchild = new Decisiontree(depth+1, left_data, data);
-    leftchild->train(left_data, min_gini);
-    rightchild = new Decisiontree(depth+1, right_data, data);
-    rightchild->train(right_data, min_gini);
-  } // gini_imp>min_gini
-  else{
-    std::cout << "training done" << std::endl;
-    is_leaf = true;
-    int ntrues = 0;
-    //count '+' labels
-    for (auto idata : data_indices){
-      if(data[idata].label == label)
-        ntrues += 1;
-    } //data iteration
-    certainty = (float)ntrues/(float)data_indices.size();
-    if (certainty <= 0.5){
-      prediction = '-';
-      certainty = 1- certainty;
-    } //if neg prediction
-    else{
-      prediction = '+';
-    }// if pos prediction
-  } // gini_imp <= min_gini
-}; //train
-
-void Decisiontree::train(std::vector<int> data_indices, int min_instances_at_leaf){
-  if (testing)
-    std::cout << "start training on depth " << depth << " ....." << std::endl;
-  gini_imp = gini_impurity(data_indices);
-
-  //int ndata = data.size();
-  std::vector<int> left_data;
-  std::vector<int> right_data;
-  if(data_indices.size() > min_instances_at_leaf and gini_imp>0){
-    max_information_gain(data_indices);
-    //split data (for readability in own function?)
-    if(sep_feature_type == 'n'){
-      for (auto idata : data_indices){
-        Dataset thisdata=data[idata];
-        if (thisdata.num_features[sep_feature_index] <= sep_threshold)      //TODO: decide between string and char!
-          left_data.push_back(idata);
-        else
-          right_data.push_back(idata);
-      } // iterate over data
-    } // seperate by numeric
-    else if(sep_feature_type == 'c'){
-      for (auto idata : data_indices){
-        Dataset thisdata=data[idata];
-        if (thisdata.cat_features[sep_feature_index] ==sep_category_flag)      
-          left_data.push_back(idata);
-        else
-          right_data.push_back(idata);
-      } // iterate over data
-    } // seperate by category
-    leftchild = new Decisiontree(depth+1, left_data, data);
-    leftchild->train(left_data, min_instances_at_leaf);
-    rightchild = new Decisiontree(depth+1, right_data, data);
-    rightchild->train(right_data, min_instances_at_leaf);
-  } // data.size()>min_instances
-  else{
-    if (testing)
-      std::cout << "training done" << std::endl;
-    is_leaf = true;
-    int ntrues = 0;
-    //count '+' labels
-    for (auto idata : data_indices){
-      if(data[idata].label == label)
-        ntrues += 1;
-    } //data iteration
-    certainty = (float)ntrues/(float)data_indices.size();
-    if (certainty <= 0.5){
-      prediction = '-';
-      certainty = 1- certainty;
-    } //if neg prediction
-    else{
-      prediction = '+';
-    }// if pos prediction
-  } // data.size <= min_instances
-}; //train
-
+}//max information gain
 
 char Decisiontree::predict(const Dataset &data){
   if (is_leaf){
@@ -291,10 +184,6 @@ char Decisiontree::predict(const Dataset &data){
   }
 }
 
-/* 
-links ist kleiner gleich
-links ist wahr
-*/
 char Decisiontree::predict(const Dataset &data, float &certainty_){
   if (is_leaf){
     certainty_ = certainty;
@@ -308,7 +197,9 @@ char Decisiontree::predict(const Dataset &data, float &certainty_){
   }
 }
 
-bool Decisiontree::is_in_left_child(const Dataset &data){
+//template<typename T>
+//bool Decisiontree<T>::is_in_left_child(const Dataset &data){
+  bool Decisiontree::is_in_left_child(const Dataset &data){
   if (sep_feature_type == 'c'){
     if (data.cat_features[sep_feature_index] == sep_category_flag)
       return true;
