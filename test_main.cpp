@@ -32,12 +32,12 @@ int main(){
   }
   std::cout << std::endl;
 
-  mytree->train(traindata, 10);
+  mytree->template train<int>(traindata, 10);
 
-  float gini = mytree->gini_impurity_of_all_leaves();
+  //float gini = mytree->gini_impurity_of_all_leaves();
 
   std::cout << "gini at node " << mytree->gini_imp << std::endl;
-  std::cout << "gini of all leaves " << gini << std::endl;
+  //std::cout << "gini of all leaves " << gini << std::endl;
   std::cout << "trained" << std::endl;
 /* 
   int x = 0;
