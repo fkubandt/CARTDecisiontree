@@ -17,6 +17,8 @@
 #include <string>
 #include <set>
 #include <vector>
+#include <fstream>
+#include <iostream>
 
 #include "data_class.h"
 
@@ -55,6 +57,8 @@ class Decisiontree
     char predict(const Dataset &data, float &certainty_);
     bool is_in_left_child(const Dataset &data);
 
+    void save(std::string filename);
+    void save_to_file(std::ofstream &file);
     //for testing
     float gini_impurity_of_all_leaves();
 

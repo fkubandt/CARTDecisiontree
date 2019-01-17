@@ -59,7 +59,7 @@ Decisiontree::Decisiontree(std::vector<Dataset> data_){
    * to find max(I_G,parent - p_left * I_G,left - p_right * I_G,right)
    * with p_i = numdata_i/numdata_parent
    *                                          */
-
+  //sep_feature_type ='t';
   std::cout << "maximize the information gain ....." << std::endl;
   float information_gain = 0;
   float best_information_gain = 0;
@@ -130,12 +130,10 @@ Decisiontree::Decisiontree(std::vector<Dataset> data_){
     this_features_categories = possible_categories[ifeatures];
     num_thresholds = this_features_categories.size();
     for(auto ithresholds : this_features_categories){
-    //for (std::set<std::string>::iterator ithresholds=this_features_categories.begin(); ithresholds!=this_features_categories.end(); ithresholds++){
       std::string flag = ithresholds;
       left_data.clear();
       right_data.clear();
       for (auto idata : data_indices){
-      //for (std::vector<int>::iterator idata = data_indices.begin(); idata!=data_indices.end(); idata++){
         Dataset thisdata=data[idata];
         if (thisdata.cat_features[ifeatures] == flag[0])      //TODO: decide between string and char!
           left_data.push_back(idata);
@@ -178,9 +176,7 @@ char Decisiontree::predict(const Dataset &data){
   }
 }
 
-//template<typename T>
-//char Decisiontree<T>::predict(const Dataset &data, float &certainty_){
-  char Decisiontree::predict(const Dataset &data, float &certainty_){
+char Decisiontree::predict(const Dataset &data, float &certainty_){
   if (is_leaf){
     certainty_ = certainty;
     return prediction;
@@ -209,15 +205,34 @@ char Decisiontree::predict(const Dataset &data){
       return false;
   }
 }
+
+void Decisiontree::save(std::string filename){
+  std::ofstream file;
+  file.open(filename);
+  std::cout << "saving tree...\n";
+  file << "depth, is_leaf, sep_feature_type, sep_feature_index, sep_threshold, sep_category_flag, prediction, certainty\n";
+  save_to_file(file);
+  file.close();
+  std::cout << "completed\n";
+}
+
+void Decisiontree::save_to_file(std::ofstream &file){
+  std::cout << sep_feature_type << std::endl;
+  file << depth <<", " << is_leaf <<", " << sep_feature_type <<", " << sep_feature_index;
+  file  <<", " << sep_threshold <<", " << sep_category_flag <<", " << prediction;
+  file  <<", " << certainty << std::endl;
+  if (!is_leaf){
+    leftchild->save_to_file(file);
+    rightchild->save_to_file(file);
+  }
+}
 /* 
 links ist kleiner gleich
 links ist wahr
 */
 
 //for testing purposes
-//template<typename T>
-//float Decisiontree<T>::gini_impurity_of_all_leaves(){
-  float Decisiontree::gini_impurity_of_all_leaves(){
+float Decisiontree::gini_impurity_of_all_leaves(){
   float full_gini = 0;
   if (is_leaf == true){
     int n = dataslice.size();
