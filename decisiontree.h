@@ -22,6 +22,8 @@
 
 #include "data_class.h"
 
+extern bool testing;
+
 class Decisiontree
 {
     public:
@@ -72,7 +74,8 @@ class Decisiontree
 
 template<typename T> //TODO: this contains a not-ending loop --> exit statements aren't updated yet
 void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
-  std::cout <<std::endl << "start training on depth " << depth << " ....." << std::endl;
+  if (testing)
+    std::cout <<std::endl << "start training on depth " << depth << " ....." << std::endl;
   gini_imp = gini_impurity(data_indices);
   bool exit_statement;
   //
@@ -91,7 +94,8 @@ void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
   std::vector<int> left_data;
   std::vector<int> right_data;
   if(exit_statement){
-    std::cout << "training done" << std::endl;
+    if (testing)
+      std::cout << "training done" << std::endl;
     is_leaf = true;
     int ntrues = 0;
     //count '+' labels
