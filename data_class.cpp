@@ -29,7 +29,7 @@ std::vector<std::set<float>> Dataset::numerical_sets{};  // set with all possibl
 std::vector<std::string> Dataset::num_feature_names{};     //for saving in correct order
 std::vector<std::string> Dataset::cat_feature_names{};
 
-int Dataset::nrDatasets{100};  //Number of Datasets just to boost the code
+extern bool testing;
 
 
 Dataset::Dataset(const int nrFeatures_):nrFeatures(nrFeatures_){
@@ -184,4 +184,12 @@ void set_numerical_set(const std::vector<Dataset> &data){
       Dataset::numerical_sets[j].insert(tmp);
     } // j++
   } // i++
+}
+
+std::vector<Dataset> create_Data(const std::string filename, bool load_label){
+  std::vector<Dataset> data;
+  data = load_Dataset_from_file(load_label, filename);
+  set_feature_set(data);
+  set_numerical_set(data);
+  return data;
 }

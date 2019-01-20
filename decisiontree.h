@@ -63,6 +63,7 @@ class Decisiontree
     void save_to_file(std::ofstream &file);
     //for testing
     float gini_impurity_of_all_leaves();
+    float test(std::vector<int> &testdata, const int leafsize);
 
     //void split_dataset(float* dataset);       //make more readable?                                               
     //TODO: void save(std::string filename) const;

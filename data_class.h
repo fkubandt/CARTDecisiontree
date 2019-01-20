@@ -35,6 +35,8 @@ std::vector<Dataset> load_Dataset_from_file(const bool load_label, const std::st
 void save_Dataset_to_file(const std::string file_name,const  std::vector<Dataset> &data);
 void set_feature_set(const std::vector<Dataset> &data);
 void set_numerical_set(const std::vector<Dataset> &data);
+std::vector<Dataset> create_Data(const std::string filename, bool load_label);
+
 
 //      global variabels
 // std::vector<std::string> feature_names;

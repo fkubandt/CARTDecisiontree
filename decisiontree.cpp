@@ -253,3 +253,19 @@ float Decisiontree::gini_impurity_of_all_leaves(){
   }
   return full_gini;
 }
+
+float Decisiontree::test(std::vector<int> &testdata, const int leafsize){
+  char prediction{'x'};
+  int counter{0};
+  for (auto i:testdata){
+      prediction = this->predict(data[i]);
+      if (testing){
+        std::cout << "Label für Person " << i <<": "<<data[i].label <<std::endl;
+        std::cout << "Vorhersage für Person " << i <<": "<< prediction <<std::endl;}
+      if (prediction == data[i].label)
+        counter++;
+    }
+    double total_prediction = (double)counter/testdata.size();
+    std::cout << "right labled: " << total_prediction *100<<"\%"<< " with leafsize: " << leafsize << std::endl;
+    return total_prediction;
+}
