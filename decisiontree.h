@@ -41,34 +41,37 @@ class Decisiontree
     float certainty = 0.;
     char prediction = 'x';
     float gini_imp = -1;
-    //
+//
     public:
     int depth = 0;
     bool is_leaf = false;
     const char label = '+'; 
     static int n_nodes;
     int node_index = -1;
-    //
-    // Member Functions 
+//
+    //Member Functions 
+      //constructors
     Decisiontree(int depth, std::vector<int> dataslice, std::vector<Dataset> data);
     Decisiontree(std::vector<Dataset> data);
     Decisiontree();
     ~Decisiontree();   
+      //training
     float gini_impurity(std::vector<int> data_indices) const;
     float max_information_gain(std::vector<int> data_indices);
+    void create_leaf(std::vector<int> data_indices);
     template<typename T> void train(std::vector<int> data_indices, T exit_condition);
-    //
+    template<typename T> void split_data(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, 
+                                         char sep_ft_type, int sep_ft_index, T threshold);
+      //prediction
     char predict(const Dataset &data);
     char predict(const Dataset &data, float &certainty_);
     bool is_in_left_child(const Dataset &data);
-
+      //data export
     void save(std::string filename);
     void save_to_file(std::ofstream &file);
     //for testing
     float gini_impurity_of_all_leaves();
-    void create_leaf(std::vector<int> data_indices);
-    template<typename T> void split_data(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, 
-                                         char sep_ft_type, int sep_ft_index, T threshold);
+
 
     //TODO: int load(std::string filename, float* dataset);
 };
