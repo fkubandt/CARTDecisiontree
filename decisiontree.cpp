@@ -33,7 +33,15 @@ Decisiontree::Decisiontree(std::vector<Dataset> data_){
   }
 }
 
-  float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
+Decisiontree::~Decisiontree(){
+  if (testing)
+    std::cout << "Destructor called" << std::endl;
+  if (!is_leaf)
+    delete leftchild;
+    delete rightchild;
+}
+
+float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
   /* 
    * calculate the gini impurity I_G for binary classes +/- as 
    * I_G = p_+(1-p_+) + p_-(1-p_-) = 2*p_+(1-p_+) 

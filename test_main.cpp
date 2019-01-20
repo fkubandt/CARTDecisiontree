@@ -17,7 +17,7 @@ double train_percent = 0.7;
 double test_percent = 0.2;
 double analyse_percent = 0.1;
 int Dataset::nrDatasets{700};  //Number of Datasets just to boost the code
-bool find_optimum_leaf_size = true;
+bool find_optimum_leaf_size = false;
 int size_of_leaf = 20;
 int begin_leaf_size = 1;
 int end_leaf_size = 50;
@@ -60,6 +60,7 @@ int main(){
 
   int best_leaf_size = 0;
   double best_prediction = 0.;
+
   Decisiontree* mytree = new Decisiontree(a);
   
   if (find_optimum_leaf_size){
@@ -80,6 +81,8 @@ int main(){
       }
     }
     std::cout << "best tree with leafsize: " << best_leaf_size << " and prediction: "<<best_prediction << std::endl;
+    mytree->train(traindata, best_leaf_size);
+    mytree->test(testdata, best_leaf_size);
   }
   else{
     mytree->train(traindata, size_of_leaf);
@@ -135,6 +138,7 @@ int main(){
   }
   std::cout << "same classification although set to biggest ethnicity: "<<(double)analyse_counter/data_to_analyse.size()*100<<"\%"<<std::endl;
   std::cout << "biggest ethnicity: " << biggest_ethnicity <<" mit Häufigkeit: " << x<<std::endl;
+  delete mytree;
 
   if (save_file)    //save dataset    until now not needed because we do not change any data
     save_Dataset_to_file("abc.dat", a);

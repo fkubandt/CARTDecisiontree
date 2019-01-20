@@ -30,8 +30,8 @@ class Decisiontree
     std::vector<int> dataslice;
      std::vector<Dataset> data;  
     //separation information:
-    Decisiontree* leftchild;
-    Decisiontree* rightchild;
+    Decisiontree* leftchild{nullptr};
+    Decisiontree* rightchild{nullptr};
     char sep_feature_type='x';
     int sep_feature_index=-1;
     char sep_category_flag = 'x';
