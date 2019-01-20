@@ -1,5 +1,5 @@
 /*
- * ************************************************
+ * *************************************************************
  *  Filename:     decisiontree.cpp
  *
  *  Description:  Node Class for Decision Tree
@@ -11,19 +11,21 @@
  *
  *  Author:       Frederike Kubandt, Maximilian Märcz
  *  Organization: Goehte University Frankfurt
- * ************************************************* 
+ * ************************************************************* 
 */
 
 #include "decisiontree.h"
 //
 
-
-Decisiontree::Decisiontree(int depth, std::vector<int> dataslice, std::vector<Dataset> data):depth(depth), dataslice(dataslice), data(data){};
+int Decisiontree::n_nodes = 0;
 
 
 Decisiontree::Decisiontree(std::vector<Dataset> data_){
+  //root node constructor, to be called from outside
   depth = 0;
-  // std::vector<Dataset> this.data = data_;
+  n_nodes += 1;
+  node_index = n_nodes;
+  std::cout << "node " << node_index  << "created" << std::endl;
   this->data = data_;
   // dataslice should include all indices in data
   dataslice.reserve(data.size());
@@ -31,6 +33,15 @@ Decisiontree::Decisiontree(std::vector<Dataset> data_){
     dataslice.push_back(i);
   }
 }
+
+
+Decisiontree::Decisiontree(int depth, std::vector<int> dataslice, std::vector<Dataset> data):depth(depth), dataslice(dataslice), data(data){
+  //child node constructor
+  n_nodes += 1;
+  node_index = n_nodes;
+  std::cout << "node " << node_index  << "created" << std::endl;
+};
+
 
   float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
   /* 
@@ -53,7 +64,7 @@ Decisiontree::Decisiontree(std::vector<Dataset> data_){
 }
 
 
-  void Decisiontree::max_information_gain(std::vector<int> data_indices){
+  float Decisiontree::max_information_gain(std::vector<int> data_indices){
   /*
    * Iterates over all possible features and thresholds and maximizes 
    * to find max(I_G,parent - p_left * I_G,left - p_right * I_G,right)
@@ -70,10 +81,10 @@ Decisiontree::Decisiontree(std::vector<Dataset> data_){
   float p_left;
   float p_right;
   int nfeatures;
-  int best_feature;
+  int best_feature = -1;
   float best_threshold = 0;
   std::string best_flag = "none";                       //TODO: decide between char and string for cat and flag
-  char num_or_cat = 'n';                                //best split for numerical or categorical feature?
+  char num_or_cat = 'x';                                //best split for numerical or categorical feature?
   float threshold;
   int num_thresholds;
   std::set<float> this_features_values;
@@ -90,7 +101,7 @@ Decisiontree::Decisiontree(std::vector<Dataset> data_){
   
   // test all numerical thresholds
   nfeatures = data[0].num_features.size();
-  std::cout << "looking for numerical separation" << data[0].num_features.size() << std::endl;
+  std::cout << "looking for numerical separation" << std::endl;
   for (int ifeatures=0; ifeatures<nfeatures; ifeatures++){
     this_features_values = possible_values[ifeatures];
     for(auto ithresholds : this_features_values){
@@ -161,8 +172,28 @@ Decisiontree::Decisiontree(std::vector<Dataset> data_){
   else if(sep_feature_type == 'c'){
     sep_category_flag = best_flag[0];
   } // category flag
-  std::cout << "information gain maximized to ....." << best_information_gain << std::endl; 
+  std::cout << "information gain maximized to ....." << best_information_gain << std::endl;
+  return best_information_gain; 
 }//max information gain
+
+void Decisiontree::create_leaf(std::vector<int> data_indices){
+    std::cout << "training done" << std::endl;
+    is_leaf = true;
+    int ntrues = 0;
+    //count '+' labels
+    for (auto idata : data_indices){
+      if(data[idata].label == label)
+        ntrues += 1;
+    } //data iteration
+    certainty = (float)ntrues/(float)data_indices.size();
+    if (certainty <= 0.5){
+      prediction = '-';
+      certainty = 1- certainty;
+    } //if neg prediction
+    else{
+      prediction = '+';
+    }// if pos prediction
+}
 
 char Decisiontree::predict(const Dataset &data){
   if (is_leaf){
@@ -230,6 +261,7 @@ void Decisiontree::save_to_file(std::ofstream &file){
 links ist kleiner gleich
 links ist wahr
 */
+
 
 //for testing purposes
 float Decisiontree::gini_impurity_of_all_leaves(){

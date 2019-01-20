@@ -9,6 +9,8 @@
 #include<set>
 #include<numeric>
 
+
+
 bool save_file = false;
 double train_percent = 0.7;
 double test_percent = 0.2;
@@ -23,7 +25,7 @@ int main(){
   int counter{0};
 
   std::vector<Dataset> a;
-  a = load_Dataset_from_file(true, "devtesting.dat");
+  a = load_Dataset_from_file(true, "Data/shuffled_credit_approval_australia.dat");
   set_feature_set(a);
   set_numerical_set(a);
   int size_traindata = (int)(train_percent*a.size());
@@ -42,12 +44,12 @@ int main(){
   std::iota(testdata.begin(), testdata.end(), size_traindata);
   std::iota(analysedata.begin(), analysedata.end(), size_testdata+size_traindata);
 
-  std::cout << a[5].num_features.size() << std::endl;
+  //std::cout << a[5].num_features.size() << std::endl;
   // Test if data is correct:
   //Decisiontree::data = a;
 
   Decisiontree* mytree = new Decisiontree(a);
-  mytree->train(traindata, 5);
+  mytree->train(traindata, 20);
   //mytree->train(traindata, 10);
 
   //float gini = mytree->gini_impurity_of_all_leaves();
