@@ -15,22 +15,29 @@
 */
 
 #include "decisiontree.h"
+#include "data_class.h"
 extern bool testing;
 //
 
+int Decisiontree::n_nodes = 0;
+Decisiontree::Decisiontree(int depth, std::vector<int> dataslice, std::vector<Dataset> data):depth(depth), dataslice(dataslice), data(data){
+  node_index = n_nodes;
+  n_nodes += 1;
+}
 
-Decisiontree::Decisiontree(int depth, std::vector<int> dataslice, std::vector<Dataset> data):depth(depth), dataslice(dataslice), data(data){};
 
-
-Decisiontree::Decisiontree(std::vector<Dataset> data_){
+Decisiontree::Decisiontree(std::vector<Dataset> data_, std::vector<int> dataslice_){
   depth = 0;
+  node_index = n_nodes;
+  n_nodes += 1;
   // std::vector<Dataset> this.data = data_;
   this->data = data_;
   // dataslice should include all indices in data
-  dataslice.reserve(data.size());
-  for(int i=0; i<data.size();i++){
-    dataslice.push_back(i);
-  }
+  // dataslice.reserve(data.size());
+  // for(int i=0; i<data.size();i++){
+  //   dataslice.push_back(i);
+  // }
+  dataslice = dataslice_;
 }
 
 Decisiontree::~Decisiontree(){
@@ -241,6 +248,60 @@ void Decisiontree::save_to_file(std::ofstream &file){
     rightchild->save_to_file(file);
   }
 }
+
+
+void Decisiontree::save_for_visualisation(std::string filename){
+  int node_nr = 0;
+  std::ofstream file;
+  file.open(filename);
+  std::cout << "saving tree...\n";
+  file << "digraph Tree {\n" << "node [shape=box] ;\n";
+  std::string feature_name{};
+  if (sep_feature_type == 'n'){
+    feature_name = Dataset::num_feature_names[sep_feature_index];
+    file << node_index <<" [label=\"" << feature_name << " <= " << sep_threshold;
+    file << "\\n nsample = " << dataslice.size();
+    file << "\"] ;\n";
+  }
+  else{
+    feature_name = Dataset::cat_feature_names[sep_feature_index];
+    file << node_index << " [label=\"" << feature_name << " == " << sep_category_flag;
+    file << "\\n sample = " << dataslice.size();
+    file << "\"] ;\n";
+  }
+  leftchild->save_node_for_visualisation(file, node_index);
+  rightchild->save_node_for_visualisation(file, node_index);
+  file << "}";
+  file.close();
+}
+
+void Decisiontree::save_node_for_visualisation(std::ofstream &file, int parent_id){
+  if (!is_leaf){    //is a node
+    std::string feature_name{};
+    if (sep_feature_type == 'n'){
+      feature_name = Dataset::num_feature_names[sep_feature_index];
+      file << node_index <<" [label=\"" << feature_name << " <= " << sep_threshold;
+      file << "\\n nsample = " << dataslice.size();
+      file << "\"] ;\n";
+    }
+    else{
+      feature_name = Dataset::cat_feature_names[sep_feature_index];
+      file << node_index << " [label=\"" << feature_name << " == " << sep_category_flag;
+      file << "\\n sample = " << dataslice.size();
+      file << "\"] ;\n";
+    }
+    file << parent_id << " -> " << node_index << " ;\n";
+    leftchild->save_node_for_visualisation(file, node_index);
+    rightchild->save_node_for_visualisation(file, node_index);
+  }
+  else{     //is a leaf
+    file << node_index << " [label=\"" << "certainty "<<certainty;
+    file << "\\n sample = " << dataslice.size();
+    file << "\\n prediction "<<prediction << "\"] ;\n";
+    file << parent_id << " -> " << node_index << " ;\n";
+  }
+}
+
 /* 
 links ist kleiner gleich
 links ist wahr

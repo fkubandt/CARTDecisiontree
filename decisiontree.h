@@ -44,11 +44,13 @@ class Decisiontree
     public:
     int depth = 0;
     bool is_leaf = false;
-    const char label = '+'; 
+    const char label = '+';
+    static int n_nodes;
+    int node_index = -1;
     //
     // Member Functions 
     Decisiontree(int depth, std::vector<int> dataslice, std::vector<Dataset> data);
-    Decisiontree(std::vector<Dataset> data);
+    Decisiontree(std::vector<Dataset> data, std::vector<int> dataslice_);
     Decisiontree();
     ~Decisiontree();   
     float gini_impurity(std::vector<int> data_indices) const;
@@ -61,6 +63,10 @@ class Decisiontree
 
     void save(std::string filename);
     void save_to_file(std::ofstream &file);
+    void save_for_visualisation(std::string filename);
+    void save_node_for_visualisation(std::ofstream &file, int parent_id);
+
+
     //for testing
     float gini_impurity_of_all_leaves();
     float test(std::vector<int> &testdata, const int leafsize);

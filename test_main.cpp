@@ -61,7 +61,7 @@ int main(){
   int best_leaf_size = 0;
   double best_prediction = 0.;
 
-  Decisiontree* mytree = new Decisiontree(a);
+  Decisiontree* mytree = new Decisiontree(a, traindata);
   
   if (find_optimum_leaf_size){
     for (int i = begin_leaf_size; i<end_leaf_size; i++){
@@ -83,11 +83,13 @@ int main(){
     std::cout << "best tree with leafsize: " << best_leaf_size << " and prediction: "<<best_prediction << std::endl;
     mytree->train(traindata, best_leaf_size);
     mytree->test(testdata, best_leaf_size);
+    mytree->save_for_visualisation("visualisierung.dot");
   }
   else{
     mytree->train(traindata, size_of_leaf);
     mytree->test(testdata, size_of_leaf);
     mytree->save(tree_file_name);
+    mytree->save_for_visualisation("visualisierung.dot");
   }
 
 
