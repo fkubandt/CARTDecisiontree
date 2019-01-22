@@ -11,6 +11,8 @@
 #include<numeric>
 // #include<utility>
 
+
+
 bool save_file = false;
 bool testing = false;
 double train_percent = 0.7;
