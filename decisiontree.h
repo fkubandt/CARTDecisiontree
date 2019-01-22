@@ -35,7 +35,7 @@ class Decisiontree
     Decisiontree* rightchild{nullptr};
     char sep_feature_type='x';
     int sep_feature_index=-1;
-    char sep_category_flag = 'x';
+    std::string sep_category_flag = "x";
     float sep_threshold = 0.;
     //prediction information, for leaves only
     float certainty = 0.;
@@ -60,8 +60,12 @@ class Decisiontree
     float max_information_gain(std::vector<int> data_indices);
     void create_leaf(std::vector<int> data_indices);
     template<typename T> void train(std::vector<int> data_indices, T exit_condition);
-    template<typename T> void split_data(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, 
-                                         char sep_ft_type, int sep_ft_index, T threshold);
+    // template<typename T> void split_data(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, 
+    //                                      char sep_ft_type, int sep_ft_index, T threshold);
+
+    void split_data_num(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, float threshold);
+    void split_data_cat(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, std::string threshold);
+
       //prediction
     char predict(const Dataset &data);
     char predict(const Dataset &data, float &certainty_);
@@ -111,10 +115,14 @@ void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
     create_leaf(data_indices);
     return;
   }
+  // if(sep_feature_type == 'n')
+  //   split_data(data_indices, left_data, right_data, sep_feature_type, sep_feature_index, sep_threshold);
+  // else if(sep_feature_type == 'c')
+  //   split_data(data_indices, left_data, right_data, sep_feature_type, sep_feature_index, sep_category_flag);
   if(sep_feature_type == 'n')
-    split_data(data_indices, left_data, right_data, sep_feature_type, sep_feature_index, sep_threshold);
+    split_data_num(data_indices, left_data, right_data, sep_feature_index, sep_threshold);
   else if(sep_feature_type == 'c')
-    split_data(data_indices, left_data, right_data, sep_feature_type, sep_feature_index, sep_category_flag);
+    split_data_cat(data_indices, left_data, right_data, sep_feature_index, sep_category_flag);
   if (testing)
     std::cout << "sep_threshold " << sep_threshold << std::endl;
   if(typeid(exit_condition) == typeid(1)){
@@ -124,7 +132,9 @@ void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
       std::cout << "create children " << create_children << std::endl;}
   }
   else if(typeid(exit_condition) == typeid(1.)){ //TODO
-    // = (gini_imp <= exit_condition or gini_imp == 0);
+    create_children = max_inf_gain >= exit_condition;
+    if (testing)
+      std::cout << "*******************************\n";
   }
   else  {
     std::cout << "no valid exit condition given. Assume minimum 5 datasets at leaf node." << std::endl;
@@ -145,12 +155,13 @@ void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
 /* ************************************************************* *
  *                         split_data                            *
  * ************************************************************* */
-template<typename T> void Decisiontree::split_data(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, 
-                                                   char sep_ft_type, int sep_ft_index, T threshold){
+// template<typename T> void Decisiontree::split_data(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, 
+//                                                    char sep_ft_type, int sep_ft_index, T threshold){
   /* 
    * splits the data by collecting the indices that belong to the right and left
    * group each in left_data and right_data, using a given feature and threshold. 
    *                                                                           */
+/*
 if(sep_ft_type == 'n'){
     for (auto idata : data_indices){
       Dataset thisdata=data[idata];
@@ -178,6 +189,6 @@ if(sep_ft_type == 'n'){
       std::cout << sep_ft_type << "unexpected value for separation feature type, split interrupted at node " << node_index << std::endl;
   }
 }//split_data
-
+*/
 
 #endif

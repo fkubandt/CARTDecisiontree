@@ -109,7 +109,7 @@ int main(){
   std::vector<Dataset> data_to_analyse(a.begin()+ traindata.size()+testdata.size() ,a.end() );
   for ( auto idata: data_to_analyse){
     prediction_befor_change = mytree->predict(idata);
-    idata.cat_features[change_index] = '?'; //stands for no information
+    idata.cat_features[change_index] = "?"; //stands for no information
     prediction_after_change = mytree->predict(idata);
     if (prediction_befor_change == prediction_after_change)
       analyse_counter++;
@@ -122,13 +122,13 @@ int main(){
   prediction_befor_change = 'x';
   prediction_after_change = 'x';
   analyse_counter = 0;
-  char biggest_ethnicity{};
+  std::string biggest_ethnicity{};
   std::vector<Dataset> data_to_analyse_2(a.begin()+ traindata.size()+testdata.size() ,a.end() );
-  std::map<char, int> ethnicity_counter;
+  std::map<std::string, int> ethnicity_counter;
   for (auto i:Dataset::feature_sets[change_index])    //all possible ethnicity in map with value 0
-    ethnicity_counter[i.c_str()[0]]=0;
+    ethnicity_counter[i]=0;
 
-  for (auto i:data_to_analyse_2){                     //count how often each ethnicity occurs
+  for (auto i:a){                     //count how often each ethnicity occurs
     // std::cout << i.cat_features[change_index]<<std::endl;
     ethnicity_counter[i.cat_features[change_index]]++;
   }
@@ -149,7 +149,7 @@ int main(){
   std::cout << "biggest ethnicity: " << biggest_ethnicity <<" mit Häufigkeit: " << x<<std::endl;
   delete mytree;
 
-  if (save_file)    //save dataset    until now not needed because we do not change any data
+  if (save_file)    //save dataset    //until now not needed because we do not change any data
     save_Dataset_to_file("abc.dat", a);
   std::string command = "dot ";
   command.append(tree_for_visualisation_file_name);

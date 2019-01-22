@@ -13,7 +13,7 @@ class Dataset
   public:
   int nrFeatures{};
   std::vector<double> num_features{};
-  std::vector<char> cat_features{};
+  std::vector<std::string> cat_features{};
   char label{};
 
   static std::vector<std::string> feature_names;
@@ -22,12 +22,15 @@ class Dataset
   static std::vector<std::set<float>> numerical_sets;  // set with all possible numerical values
   static std::vector<std::string> num_feature_names;     //for saving in correct order
   static std::vector<std::string> cat_feature_names;
+  static std::vector<std::vector<int>> missing_values_index;  //first index: feature
+  static std::vector<int> missing_value_counter; 
+  static std::vector<float> average_num_values;
   static int nrDatasets;
 
   //Constructor sets size of vectors
   Dataset(const int nrFeatures_);
 
-  void set_features(std::ifstream &inputFile, const std::string &num, const bool set_label);
+  void set_features(std::ifstream &inputFile, const std::string &num, const bool set_label, int data_counter);
 };
 
 int skipComments(std::ifstream &fileInputStream);

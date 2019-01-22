@@ -28,22 +28,22 @@ std::vector<std::set<std::string>> Dataset::feature_sets{};    // set with all p
 std::vector<std::set<float>> Dataset::numerical_sets{};  // set with all possible numerical values
 std::vector<std::string> Dataset::num_feature_names{};     //for saving in correct order
 std::vector<std::string> Dataset::cat_feature_names{};
+std::vector<std::vector<int>> Dataset::missing_values_index{};
+std::vector<int> Dataset::missing_value_counter{}; 
+std::vector<float> Dataset::average_num_values{};
 
 extern bool testing;
-
 
 Dataset::Dataset(const int nrFeatures_):nrFeatures(nrFeatures_){
     num_features.reserve(nrFeatures);
     cat_features.reserve(nrFeatures);
   }
 
-void Dataset::set_features(std::ifstream &inputFile, const std::string &num, const bool set_label){ 
+void Dataset::set_features(std::ifstream &inputFile, const std::string &num, const bool set_label, int data_counter){ 
   //sets all features
   double tmp_num;
   char tmp_cat;
   std::string tmp, line;
-  // std::string num = "num";
-
 
   std::getline(inputFile, line);
   std::istringstream iline(line);
@@ -51,23 +51,22 @@ void Dataset::set_features(std::ifstream &inputFile, const std::string &num, con
     getline(iline, tmp, ',');
     if (Dataset::feature_types[i] == num){
       if (tmp =="?"){        //"?"" stands for no value!!
-        num_features.push_back(-1.);
+        num_features.push_back(0.);
+        missing_values_index[i].push_back(data_counter);
+        missing_value_counter[i]++;
       }
       else{
         num_features.push_back(atof(tmp.c_str()));
       }
-      //num_feature_names.push_back(feature_names[i]);
     }
     else{
-      cat_features.push_back(tmp.c_str()[0]);
-      //cat_feature_names.push_back(feature_names[i]);
+      cat_features.push_back(tmp);
     }
    }
    if(set_label){
      getline(iline, tmp, ',');
      label = tmp.c_str()[0];
    }
-
    num_features.shrink_to_fit();
    cat_features.shrink_to_fit();
  }
@@ -84,7 +83,6 @@ int skipComments(std::ifstream &fileInputStream)  // passing stream by reference
    } 
  return nComments;
 }
-
 
 std::vector<Dataset> load_Dataset_from_file(const bool load_label, const std::string file_name){
   /* load all features from file */
@@ -110,7 +108,8 @@ std::vector<Dataset> load_Dataset_from_file(const bool load_label, const std::st
   std::getline(inputFile, line);
   iline.clear();
   iline.str(line);
-
+  Dataset::missing_values_index.resize(nrFeatures);
+  Dataset::missing_value_counter.resize(nrFeatures, 0);
   for(int i = 0; i<nrFeatures;i++){
       getline(iline, tmp, ',');
       Dataset::feature_types.push_back(tmp);
@@ -124,13 +123,33 @@ std::vector<Dataset> load_Dataset_from_file(const bool load_label, const std::st
 
   std::vector<Dataset> data{};
   data.reserve(Dataset::nrDatasets); //        !input length of datafile!
+  int data_counter = 0;
   while(!inputFile.eof()){
     Dataset a(nrFeatures);
-    a.set_features(inputFile ,numerical_token ,load_label);
+    a.set_features(inputFile, numerical_token, load_label, data_counter);
     data.push_back(a);
+    data_counter++;
   } 
   inputFile.close();
   data.pop_back();     //we initalize one Dataset to much so this is one was empty
+  std::vector<std::vector<int>> tmp_missing_values_index = Dataset::missing_values_index;
+  Dataset::missing_values_index.clear();
+  for (auto i:tmp_missing_values_index){
+    if (!i.empty())
+      Dataset::missing_values_index.push_back(i);
+  }
+  Dataset::average_num_values.resize(Dataset::missing_values_index.size());
+  for (int i =0; i<Dataset::missing_value_counter.size(); i++){
+    float sum{0.};
+    for (auto idata:data)
+      sum += idata.num_features[i];
+    Dataset::average_num_values.push_back(sum/(data.size()-Dataset::missing_value_counter[i]));
+  }
+  for (int i=0; i<Dataset::missing_values_index.size(); i++){
+    for (auto j:Dataset::missing_values_index[i]){
+      data[j].num_features[i] = Dataset::average_num_values[i];
+    }
+  }
   return data;
 }
 

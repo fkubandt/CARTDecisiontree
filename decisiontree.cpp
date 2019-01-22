@@ -124,7 +124,8 @@ float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
       threshold = ithresholds;
       left_data.clear();
       right_data.clear();
-      split_data(data_indices, left_data, right_data, 'n', ifeatures, threshold);
+      // split_data(data_indices, left_data, right_data, 'n', ifeatures, threshold);
+      split_data_num(data_indices, left_data, right_data, ifeatures, threshold);
       p_left = (double)left_data.size()/ntotal_data;
       p_right = (double)right_data.size()/ntotal_data;
       if(left_data.size() != 0 and right_data.size() != 0){
@@ -154,7 +155,9 @@ float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
       std::string flag = ithresholds;
       left_data.clear();
       right_data.clear();
-      split_data(data_indices, left_data, right_data, 'c', ifeatures, flag[0]);
+      // split_data(data_indices, left_data, right_data, 'c', ifeatures, flag[0]);
+      split_data_cat(data_indices, left_data, right_data, ifeatures, flag);
+      
       if(left_data.size() != 0 and right_data.size() != 0){
         information_gain = impurity_parent - gini_impurity(left_data) - gini_impurity(right_data);
         if (testing)
@@ -162,7 +165,8 @@ float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
         if(information_gain > best_information_gain){
           best_information_gain = information_gain;
           best_feature = ifeatures;
-          best_flag = ithresholds;
+          // best_flag = ithresholds;
+          best_flag = flag;
           num_or_cat = 'c';
        }//test for best gain
       }
@@ -176,7 +180,7 @@ float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
     sep_threshold = best_threshold;
   }//numerical threshold
   else if(sep_feature_type == 'c'){
-    sep_category_flag = best_flag[0];
+    sep_category_flag = best_flag;
   }//category flag
   if (testing)
     std::cout << "information gain maximized to ....." << best_information_gain << std::endl;
@@ -284,7 +288,7 @@ void Decisiontree::save_for_visualisation(std::string filename){
   std::cout << "saving tree for visualisation...    ";
   file << "digraph Tree {\n" << "node [shape=box] ;\n";
   std::string feature_name{};
-  if (sep_feature_type == 'n'){
+  if (this->sep_feature_type == 'n'){
     feature_name = Dataset::num_feature_names[sep_feature_index];
     file << node_index <<" [label=\"" << feature_name << " <= " << sep_threshold;
     file << "\\n nsample = " << dataslice.size();
@@ -325,7 +329,9 @@ void Decisiontree::save_node_for_visualisation(std::ofstream &file, int parent_i
   else{     //is a leaf
     file << node_index << " [label=\"" << "certainty "<<certainty;
     file << "\\n sample = " << dataslice.size();
-    file << "\\n prediction "<<prediction << "\"] ;\n";
+    file << "\\n prediction "<<prediction;
+    file << "\\n gini impurity = " << gini_imp << "\"";
+    file << ", color=\"red\"] ;\n";
     file << parent_id << " -> " << node_index << " ;\n";
   }
 }
@@ -365,4 +371,30 @@ float Decisiontree::test(std::vector<int> &testdata, const int leafsize){
     double total_prediction = (double)counter/testdata.size();
     std::cout << "right labled: " << total_prediction *100<<"\%"<< " with leafsize: " << leafsize << std::endl;
     return total_prediction;
+}
+
+
+void Decisiontree::split_data_num(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, float threshold){
+  for (auto idata : data_indices){
+    Dataset thisdata=data[idata];
+    if (thisdata.num_features[sep_ft_index] <= threshold){      //TODO: decide between string and char!
+      left_data.push_back(idata);
+    }
+    else{
+      right_data.push_back(idata);
+    }
+  }//iterate over data
+  if (testing)
+    std::cout << "left data in split" << left_data.size() << std::endl;
+}
+void Decisiontree::split_data_cat(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, std::string threshold){
+  for (auto idata : data_indices){
+    Dataset thisdata=data[idata];
+    if (thisdata.cat_features[sep_ft_index] == threshold)      
+      left_data.push_back(idata);
+    else
+      right_data.push_back(idata);
+  }//iterate over data
+  if (testing)
+    std::cout << "left data in split" << left_data.size() << std::endl;
 }
