@@ -119,11 +119,9 @@ void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
     std::cout << "sep_threshold " << sep_threshold << std::endl;
   if(typeid(exit_condition) == typeid(1)){
     create_children = ((left_data.size() >= exit_condition) and (right_data.size() >= exit_condition));
-    if (testing)
+    if (testing){
       std::cout << data_indices.size() << " " << gini_imp << std::endl;
-    create_children = data_indices.size() <= exit_condition or gini_imp == 0;
-    if (testing)
-      std::cout << "create children " << create_children << std::endl;
+      std::cout << "create children " << create_children << std::endl;}
   }
   else if(typeid(exit_condition) == typeid(1.)){ //TODO
     // = (gini_imp <= exit_condition or gini_imp == 0);
@@ -132,7 +130,7 @@ void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
     std::cout << "no valid exit condition given. Assume minimum 5 datasets at leaf node." << std::endl;
     //exit_statement = (data_indices.size() > 5 or gini_imp == 0);
   }
-  if(!create_children){
+  if(create_children){
       leftchild = new Decisiontree(depth+1, left_data, data);
       leftchild->train(left_data, exit_condition);
       rightchild = new Decisiontree(depth+1, right_data, data);

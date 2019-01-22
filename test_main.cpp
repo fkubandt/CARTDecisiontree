@@ -1,6 +1,7 @@
 #include"data_class.h"
 #include "decisiontree.h"
 #include<iostream>
+#include<cstdlib>
 #include<vector>
 #include<string>
 #include<fstream>
@@ -19,12 +20,14 @@ double train_percent = 0.7;
 double test_percent = 0.2;
 double analyse_percent = 0.1;
 int Dataset::nrDatasets{700};  //Number of Datasets just to boost the code
-bool find_optimum_leaf_size = false;
+bool find_optimum_leaf_size = true;
 int size_of_leaf = 20;
 int begin_leaf_size = 1;
 int end_leaf_size = 50;
 std::string data_file_name = "Data/shuffled_credit_approval_australia.dat";
 std::string tree_file_name = "tree.dat";
+std::string tree_for_visualisation_file_name = "visualisierung.dot";
+std::string visualized_tree_file_name = "outputfile.pdf";
 int change_index{3};  //=3 for ethnicity 
 
 int main(){
@@ -66,7 +69,9 @@ int main(){
   Decisiontree* mytree = new Decisiontree(a, traindata);
   
   if (find_optimum_leaf_size){
-    for (int i = begin_leaf_size; i<end_leaf_size; i++){
+    // for (int i = begin_leaf_size; i<end_leaf_size; i++){
+    for (int i = end_leaf_size; i>=begin_leaf_size; i--){
+
       mytree->train(traindata, i);
 
       if (testing){
@@ -85,13 +90,13 @@ int main(){
     std::cout << "best tree with leafsize: " << best_leaf_size << " and prediction: "<<best_prediction << std::endl;
     mytree->train(traindata, best_leaf_size);
     mytree->test(testdata, best_leaf_size);
-    mytree->save_for_visualisation("visualisierung.dot");
+    mytree->save_for_visualisation(tree_for_visualisation_file_name);
   }
   else{
     mytree->train(traindata, size_of_leaf);
     mytree->test(testdata, size_of_leaf);
     mytree->save(tree_file_name);
-    mytree->save_for_visualisation("visualisierung.dot");
+    mytree->save_for_visualisation(tree_for_visualisation_file_name);
   }
 
 
@@ -146,6 +151,11 @@ int main(){
 
   if (save_file)    //save dataset    until now not needed because we do not change any data
     save_Dataset_to_file("abc.dat", a);
+  std::string command = "dot ";
+  command.append(tree_for_visualisation_file_name);
+  command.append(" -Tpdf -o ");
+  command.append(visualized_tree_file_name);
+  std::system(command.c_str());
   return 0;
 }
 
