@@ -55,7 +55,7 @@ Decisiontree::~Decisiontree(){
  *                          training                             *
  * ************************************************************* */
 
-//training also uses train and split template functions defined
+//training also uses train template functions defined
 //in decisiontree.h
 
 /** 
@@ -86,7 +86,7 @@ float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
    to find max(I_G,parent - p_left * I_G,left - p_right * I_G,right)
    with p_i = numdata_i/numdata_parent
                                                                   */
-  float Decisiontree::max_information_gain(std::vector<int> data_indices){
+float Decisiontree::max_information_gain(std::vector<int> data_indices){
   //sep_feature_type ='t';  
   if (testing)
     std::cout << "maximize the information gain ....." << std::endl;
@@ -187,6 +187,31 @@ float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
   return best_information_gain; 
 }//max information gain
 
+void Decisiontree::split_data_num(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, float threshold){
+  for (auto idata : data_indices){
+    Dataset thisdata=data[idata];
+    if (thisdata.num_features[sep_ft_index] <= threshold){      //TODO: decide between string and char!
+      left_data.push_back(idata);
+    }
+    else{
+      right_data.push_back(idata);
+    }
+  }//iterate over data
+  if (testing)
+    std::cout << "left data in split" << left_data.size() << std::endl;
+}
+void Decisiontree::split_data_cat(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, std::string threshold){
+  for (auto idata : data_indices){
+    Dataset thisdata=data[idata];
+    if (thisdata.cat_features[sep_ft_index] == threshold)      
+      left_data.push_back(idata);
+    else
+      right_data.push_back(idata);
+  }//iterate over data
+  if (testing)
+    std::cout << "left data in split" << left_data.size() << std::endl;
+}
+
 
 /**
    store prediction and certainty of prediction and set is_leaf true
@@ -260,20 +285,21 @@ char Decisiontree::predict(const Dataset &data, float &certainty_){
 /* ************************************************************* *
  *                       data export                             *
  * ************************************************************* */
+/* for saving and visualisation of the tree */
 void Decisiontree::save(std::string filename){
   std::ofstream file;
   file.open(filename);
   std::cout << "saving tree.........  ";
-  file << "depth, is_leaf, sep_feature_type, sep_feature_index, sep_threshold, sep_category_flag, prediction, certainty\n";
+  file << "depth, is_leaf, sep_feature_type, sep_feature_index, sep_threshold, sep_category_flag, prediction, certainty, nsample\n";
   save_to_file(file);
   file.close();
   std::cout << "completed\n";
 }
 
 void Decisiontree::save_to_file(std::ofstream &file){
-  file << depth <<", " << is_leaf <<", " << sep_feature_type <<", " << sep_feature_index;
-  file  <<", " << sep_threshold <<", " << sep_category_flag <<", " << prediction;
-  file  <<", " << certainty << std::endl;
+  file << depth <<"," << is_leaf <<"," << sep_feature_type <<"," << sep_feature_index;
+  file  <<"," << sep_threshold <<"," << sep_category_flag <<"," << prediction;
+  file  <<"," << certainty << "," << dataslice.size() << std::endl;
   if (!is_leaf){
     leftchild->save_to_file(file);
     rightchild->save_to_file(file);
@@ -341,6 +367,60 @@ links ist kleiner gleich
 links ist wahr
 */
 
+/* ************************************************************* *
+ *                       data import                             *
+ * ************************************************************* */
+
+/*loading the tree and the dataset from files
+  no training is needed but the dataslice and gini_imp are not saved and not loaded!*/
+void Decisiontree::load_from_file(std::string filename_tree, std::string filename_data){
+  std::ifstream file;
+  file.open(filename_tree);
+  std::string line;
+  std::getline(file, line);
+  int counter = 0;
+  this->data = create_Data(filename_data, true);
+  this->load_node_from_file(file, counter);
+  file.close();
+}
+
+void Decisiontree::set_node(std::ifstream &file){
+  std::string tmp, line;
+  std::getline(file, line);
+  std::istringstream iline(line);
+  getline(iline, tmp, ',');
+  this->depth = atoi(tmp.c_str());
+  getline(iline, tmp, ',');
+  this->is_leaf = atoi(tmp.c_str());
+  getline(iline, tmp, ',');
+  this->sep_feature_type = tmp.c_str()[0];
+  getline(iline, tmp, ',');
+  this->sep_feature_index = atoi(tmp.c_str());
+  getline(iline, tmp, ',');
+  this->sep_threshold = atof(tmp.c_str());
+  getline(iline, tmp, ',');
+  this->sep_category_flag = tmp;
+  getline(iline, tmp, ',');
+  this->prediction = tmp.c_str()[0];
+  getline(iline, tmp, ',');
+  this->certainty = atof(tmp.c_str());
+  getline(iline, tmp, ',');
+  this->dataslice = std::vector<int>(atoi(tmp.c_str()),0);    //has only the size of dataslice!!!
+}
+
+void Decisiontree::load_node_from_file(std::ifstream &file, int &counter){
+  this->set_node(file);
+  this->node_index = counter;
+  counter++;
+  if (!is_leaf){
+    leftchild = new Decisiontree();
+    leftchild->load_node_from_file(file, counter);
+    rightchild = new Decisiontree();
+    rightchild->load_node_from_file(file, counter);
+  }
+}
+
+
 //for testing purposes
 float Decisiontree::gini_impurity_of_all_leaves(){
   float full_gini = 0;
@@ -371,30 +451,4 @@ float Decisiontree::test(std::vector<int> &testdata, const int leafsize){
     double total_prediction = (double)counter/testdata.size();
     std::cout << "right labled: " << total_prediction *100<<"\%"<< " with leafsize: " << leafsize << std::endl;
     return total_prediction;
-}
-
-
-void Decisiontree::split_data_num(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, float threshold){
-  for (auto idata : data_indices){
-    Dataset thisdata=data[idata];
-    if (thisdata.num_features[sep_ft_index] <= threshold){      //TODO: decide between string and char!
-      left_data.push_back(idata);
-    }
-    else{
-      right_data.push_back(idata);
-    }
-  }//iterate over data
-  if (testing)
-    std::cout << "left data in split" << left_data.size() << std::endl;
-}
-void Decisiontree::split_data_cat(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, std::string threshold){
-  for (auto idata : data_indices){
-    Dataset thisdata=data[idata];
-    if (thisdata.cat_features[sep_ft_index] == threshold)      
-      left_data.push_back(idata);
-    else
-      right_data.push_back(idata);
-  }//iterate over data
-  if (testing)
-    std::cout << "left data in split" << left_data.size() << std::endl;
 }

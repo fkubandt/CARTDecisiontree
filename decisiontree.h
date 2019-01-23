@@ -20,6 +20,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 #include "data_class.h"
 
@@ -28,7 +29,7 @@ extern bool testing;
 class Decisiontree
 {
     public:
-    std::vector<int> dataslice;
+    std::vector<int> dataslice{};
     std::vector<Dataset> data;  
     //separation information:
     Decisiontree* leftchild{nullptr};
@@ -53,15 +54,14 @@ class Decisiontree
       //constructors
     Decisiontree(int depth, std::vector<int> dataslice, std::vector<Dataset> data);
     Decisiontree(std::vector<Dataset> data, std::vector<int> dataslice_);
-    Decisiontree();
+    explicit Decisiontree() = default;
+    // Decisiontree();
     ~Decisiontree();   
       //training
     float gini_impurity(std::vector<int> data_indices) const;
     float max_information_gain(std::vector<int> data_indices);
     void create_leaf(std::vector<int> data_indices);
     template<typename T> void train(std::vector<int> data_indices, T exit_condition);
-    // template<typename T> void split_data(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, 
-    //                                      char sep_ft_type, int sep_ft_index, T threshold);
 
     void split_data_num(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, float threshold);
     void split_data_cat(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, std::string threshold);
@@ -75,6 +75,10 @@ class Decisiontree
     void save_to_file(std::ofstream &file);
     void save_for_visualisation(std::string filename);
     void save_node_for_visualisation(std::ofstream &file, int parent_id);
+      //data import (only for predictions!)
+    void load_from_file(std::string filename_tree, std::string filename_data);  //no real dataslice, just the size fits!!!
+    void load_node_from_file(std::ifstream &file, int &counter);
+    void set_node(std::ifstream &file);
 
 
     //for testing

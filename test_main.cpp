@@ -13,15 +13,15 @@
 // #include<utility>
 
 
-
+bool load_tree = false;
 bool save_file = false;
 bool testing = false;
 double train_percent = 0.7;
 double test_percent = 0.2;
 double analyse_percent = 0.1;
 int Dataset::nrDatasets{700};  //Number of Datasets just to boost the code
-bool find_optimum_leaf_size = true;
-int size_of_leaf = 20;
+bool find_optimum_leaf_size = false;
+int size_of_leaf = 4;
 int begin_leaf_size = 1;
 int end_leaf_size = 50;
 std::string data_file_name = "Data/shuffled_credit_approval_australia.dat";
@@ -68,7 +68,7 @@ int main(){
 
   Decisiontree* mytree = new Decisiontree(a, traindata);
   
-  if (find_optimum_leaf_size){
+  if (find_optimum_leaf_size and !load_tree){
     // for (int i = begin_leaf_size; i<end_leaf_size; i++){
     for (int i = end_leaf_size; i>=begin_leaf_size; i--){
 
@@ -92,13 +92,21 @@ int main(){
     mytree->test(testdata, best_leaf_size);
     mytree->save_for_visualisation(tree_for_visualisation_file_name);
   }
-  else{
+  else if(!find_optimum_leaf_size and !load_tree){
     mytree->train(traindata, size_of_leaf);
     mytree->test(testdata, size_of_leaf);
     mytree->save(tree_file_name);
     mytree->save_for_visualisation(tree_for_visualisation_file_name);
   }
 
+//load tree from file
+  else if (load_tree){
+    Decisiontree* newtree = new Decisiontree();
+    newtree->load_from_file("tree.dat", data_file_name);
+    std::string abc = "secondtree.dot";
+    newtree->save_for_visualisation(abc);
+    newtree->test(testdata, size_of_leaf);
+  }
 
 
   //make a copy of all analyse data without ethnicity
@@ -129,7 +137,6 @@ int main(){
     ethnicity_counter[i]=0;
 
   for (auto i:a){                     //count how often each ethnicity occurs
-    // std::cout << i.cat_features[change_index]<<std::endl;
     ethnicity_counter[i.cat_features[change_index]]++;
   }
   int x = 0;
