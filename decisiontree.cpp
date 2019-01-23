@@ -20,7 +20,7 @@ extern bool testing;
 //
 
 int Decisiontree::n_nodes = 0;
-Decisiontree::Decisiontree(int depth, std::vector<int> dataslice, std::vector<Dataset> data):depth(depth), dataslice(dataslice), data(data){
+Decisiontree::Decisiontree(int depth, std::vector<int> dataslice, std::vector<Datapoint> data):depth(depth), dataslice(dataslice), data(data){
   node_index = n_nodes;
   n_nodes += 1;
   if (testing)
@@ -28,11 +28,11 @@ Decisiontree::Decisiontree(int depth, std::vector<int> dataslice, std::vector<Da
 }
 
 
-Decisiontree::Decisiontree(std::vector<Dataset> data_, std::vector<int> dataslice_){
+Decisiontree::Decisiontree(std::vector<Datapoint> data_, std::vector<int> dataslice_){
   depth = 0;
   node_index = n_nodes;
   n_nodes += 1;
-  // std::vector<Dataset> this.data = data_;
+  // std::vector<Datapoint> this.data = data_;
   this->data = data_;
   // dataslice should include all indices in data
   // dataslice.reserve(data.size());
@@ -108,8 +108,8 @@ float Decisiontree::max_information_gain(std::vector<int> data_indices){
   std::set<float> this_features_values;
   std::set<std::string> this_features_categories;
 //
-  std::vector<std::set<float>> possible_values = Dataset::numerical_sets;           //all possible values for each numerical feature
-  std::vector<std::set<std::string>> possible_categories = Dataset::feature_sets; //all possible values for each categorical feature 
+  std::vector<std::set<float>> possible_values = Datapoint::num_sets;           //all possible values for each numerical feature
+  std::vector<std::set<std::string>> possible_categories = Datapoint::cat_sets; //all possible values for each categorical feature 
 //
   std::vector<int> left_data;
   std::vector<int> right_data;
@@ -189,7 +189,7 @@ float Decisiontree::max_information_gain(std::vector<int> data_indices){
 
 void Decisiontree::split_data_num(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, float threshold){
   for (auto idata : data_indices){
-    Dataset thisdata=data[idata];
+    Datapoint thisdata=data[idata];
     if (thisdata.num_features[sep_ft_index] <= threshold){      //TODO: decide between string and char!
       left_data.push_back(idata);
     }
@@ -202,7 +202,7 @@ void Decisiontree::split_data_num(std::vector<int> data_indices, std::vector<int
 }
 void Decisiontree::split_data_cat(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, std::string threshold){
   for (auto idata : data_indices){
-    Dataset thisdata=data[idata];
+    Datapoint thisdata=data[idata];
     if (thisdata.cat_features[sep_ft_index] == threshold)      
       left_data.push_back(idata);
     else
@@ -240,7 +240,7 @@ void Decisiontree::create_leaf(std::vector<int> data_indices){
 /* ************************************************************* *
  *                       prediction                              *
  * ************************************************************* */
-char Decisiontree::predict(const Dataset &data){
+char Decisiontree::predict(const Datapoint &data){
   if (is_leaf){
     return prediction;
   }
@@ -252,7 +252,7 @@ char Decisiontree::predict(const Dataset &data){
   }
 }
 
-char Decisiontree::predict(const Dataset &data, float &certainty_){
+char Decisiontree::predict(const Datapoint &data, float &certainty_){
   if (is_leaf){
     certainty_ = certainty;
     return prediction;
@@ -266,7 +266,7 @@ char Decisiontree::predict(const Dataset &data, float &certainty_){
 }
 
 
-  bool Decisiontree::is_in_left_child(const Dataset &data){
+  bool Decisiontree::is_in_left_child(const Datapoint &data){
   if (sep_feature_type == 'c'){
     if (data.cat_features[sep_feature_index] == sep_category_flag)
       return true;
@@ -315,19 +315,21 @@ void Decisiontree::save_for_visualisation(std::string filename){
   file << "digraph Tree {\n" << "node [shape=box] ;\n";
   std::string feature_name{};
   if (this->sep_feature_type == 'n'){
-    feature_name = Dataset::num_feature_names[sep_feature_index];
+    feature_name = Datapoint::num_feature_id[sep_feature_index];
     file << node_index <<" [label=\"" << feature_name << " <= " << sep_threshold;
     file << "\\n nsample = " << dataslice.size();
     file << "\"] ;\n";
   }
   else{
-    feature_name = Dataset::cat_feature_names[sep_feature_index];
+    feature_name = Datapoint::cat_feature_id[sep_feature_index];
     file << node_index << " [label=\"" << feature_name << " == " << sep_category_flag;
     file << "\\n sample = " << dataslice.size();
     file << "\"] ;\n";
   }
-  leftchild->save_node_for_visualisation(file, node_index);
-  rightchild->save_node_for_visualisation(file, node_index);
+  if (!is_leaf){
+    leftchild->save_node_for_visualisation(file, node_index);
+    rightchild->save_node_for_visualisation(file, node_index);
+  }
   file << "}";
   file.close();
   std::cout << "completed\n";
@@ -337,13 +339,13 @@ void Decisiontree::save_node_for_visualisation(std::ofstream &file, int parent_i
   if (!is_leaf){    //is a node
     std::string feature_name{};
     if (sep_feature_type == 'n'){
-      feature_name = Dataset::num_feature_names[sep_feature_index];
+      feature_name = Datapoint::num_feature_id[sep_feature_index];
       file << node_index <<" [label=\"" << feature_name << " <= " << sep_threshold;
       file << "\\n nsample = " << dataslice.size();
       file << "\"] ;\n";
     }
     else{
-      feature_name = Dataset::cat_feature_names[sep_feature_index];
+      feature_name = Datapoint::cat_feature_id[sep_feature_index];
       file << node_index << " [label=\"" << feature_name << " == " << sep_category_flag;
       file << "\\n sample = " << dataslice.size();
       file << "\"] ;\n";

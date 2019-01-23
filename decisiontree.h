@@ -30,7 +30,7 @@ class Decisiontree
 {
     public:
     std::vector<int> dataslice{};
-    std::vector<Dataset> data;  
+    std::vector<Datapoint> data;  
     //separation information:
     Decisiontree* leftchild{nullptr};
     Decisiontree* rightchild{nullptr};
@@ -52,8 +52,8 @@ class Decisiontree
 //
     //Member Functions 
       //constructors
-    Decisiontree(int depth, std::vector<int> dataslice, std::vector<Dataset> data);
-    Decisiontree(std::vector<Dataset> data, std::vector<int> dataslice_);
+    Decisiontree(int depth, std::vector<int> dataslice, std::vector<Datapoint> data);
+    Decisiontree(std::vector<Datapoint> data, std::vector<int> dataslice_);
     explicit Decisiontree() = default;
     // Decisiontree();
     ~Decisiontree();   
@@ -67,9 +67,9 @@ class Decisiontree
     void split_data_cat(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, std::string threshold);
 
       //prediction
-    char predict(const Dataset &data);
-    char predict(const Dataset &data, float &certainty_);
-    bool is_in_left_child(const Dataset &data);
+    char predict(const Datapoint &data);
+    char predict(const Datapoint &data, float &certainty_);
+    bool is_in_left_child(const Datapoint &data);
       //data export
     void save(std::string filename);
     void save_to_file(std::ofstream &file);
@@ -141,7 +141,7 @@ void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
       std::cout << "*******************************\n";
   }
   else  {
-    std::cout << "no valid exit condition given. Assume minimum 5 datasets at leaf node." << std::endl;
+    std::cout << "no valid exit condition given. Assume minimum 5 Datapoints at leaf node." << std::endl;
     //exit_statement = (data_indices.size() > 5 or gini_imp == 0);
   }
   if(create_children){
@@ -168,7 +168,7 @@ void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
 /*
 if(sep_ft_type == 'n'){
     for (auto idata : data_indices){
-      Dataset thisdata=data[idata];
+      Datapoint thisdata=data[idata];
       if (thisdata.num_features[sep_ft_index] <= threshold){      //TODO: decide between string and char!
         left_data.push_back(idata);
       }
@@ -179,7 +179,7 @@ if(sep_ft_type == 'n'){
   }//seperate by numeric
   else if(sep_ft_type == 'c'){
     for (auto idata : data_indices){
-      Dataset thisdata=data[idata];
+      Datapoint thisdata=data[idata];
       if (thisdata.cat_features[sep_ft_index] == threshold)      
         left_data.push_back(idata);
       else

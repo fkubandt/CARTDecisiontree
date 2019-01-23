@@ -19,37 +19,36 @@ data    (float or string for num or cat)
 ....
  */
 
-class Dataset
+class Datapoint
 {
   public:
-  int nrFeatures{};
   std::vector<double> num_features{};
   std::vector<std::string> cat_features{};
   char label{};
 
-  static std::vector<std::string> feature_names;          //all feature names
-  static std::vector<std::string> feature_types;          //all feature types ("num" or "cat")
-  static std::vector<std::set<std::string>> feature_sets; // set with all possible feature values
-  static std::vector<std::set<float>> numerical_sets;     // set with all possible numerical values
-  static std::vector<std::string> num_feature_names;      //for saving in correct order
-  static std::vector<std::string> cat_feature_names;      //for saving in correct order
+  static std::vector<std::set<std::string>> cat_sets;   // set with all possible cat values
+  static std::vector<std::set<float>> num_sets;         // set with all possible num values
+  static std::vector<std::string> num_feature_id;       //for saving in correct order
+  static std::vector<std::string> cat_feature_id;       //for saving in correct order
   static std::vector<std::vector<int>> missing_values_index;  //first index: feature; second: index of dataset
   static std::vector<int> missing_value_counter;          //how many datasets have a missing value in feature i
   static std::vector<float> average_num_values;           //average of all num feature
-  static int nrDatasets;                                  //how many datasets do we have
-
+  static int nr_datapoints;                                  //how many datasets do we have
+  static int nr_features;
+  
   //Constructor sets size of vectors
-  Dataset(const int nrFeatures_);
+  Datapoint(const int nr_features_);
 
-  //sets all features of one dataset
-  void set_features(std::ifstream &inputFile, const std::string &num, const bool set_label, int data_counter);
+  //sets all features of one Datapoint
+  void set_features(std::ifstream &inputFile, const std::string &num, const bool set_label,
+                     int data_counter, std::vector<std::string> &feature_types);
 };
 
-std::vector<Dataset> create_Data(const std::string filename, bool load_label); //use this one in the main function!!
-std::vector<Dataset> load_Dataset_from_file(const bool load_label, const std::string file_name);
-void set_feature_set(const std::vector<Dataset> &data);
-void set_numerical_set(const std::vector<Dataset> &data);
-void save_Dataset_to_file(const std::string file_name,const  std::vector<Dataset> &data);
+std::vector<Datapoint> create_Data(const std::string filename, bool load_label); //use this one in the main function!!
+std::vector<Datapoint> load_Dataset_from_file(const bool load_label, const std::string file_name);
+void set_feature_set(const std::vector<Datapoint> &data);
+void set_numerical_set(const std::vector<Datapoint> &data);
+void save_Dataset_to_file(const std::string file_name,const  std::vector<Datapoint> &data);
 int skipComments(std::ifstream &fileInputStream);
 
 #endif

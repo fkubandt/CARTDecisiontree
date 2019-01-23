@@ -15,34 +15,38 @@
 
 bool load_tree = false;
 bool save_file = false;
+bool find_optimum_leaf_size = false;
+int size_of_leaf = 20;
+int begin_leaf_size = 1;
+int end_leaf_size = 50;
 bool testing = false;
 double train_percent = 0.7;
 double test_percent = 0.2;
 double analyse_percent = 0.1;
-int Dataset::nrDatasets{700};  //Number of Datasets just to boost the code
-bool find_optimum_leaf_size = false;
-int size_of_leaf = 4;
-int begin_leaf_size = 1;
-int end_leaf_size = 50;
+int Datapoint::nr_datapoints{700};  //Number of Datapoints just to boost the code
 std::string data_file_name = "Data/shuffled_credit_approval_australia.dat";
+// std::string data_file_name = "Data/adult_data.csv";  //set with 40000 data
 std::string tree_file_name = "tree.dat";
 std::string tree_for_visualisation_file_name = "visualisierung.dot";
-std::string visualized_tree_file_name = "outputfile.pdf";
+std::string visualized_tree_file_name = "tree.pdf";
 int change_index{3};  //=3 for ethnicity 
 
 int main(){
-  char prediction{'x'};
-  int counter{0};
+  // char prediction{'x'};
+  // int counter{0};
   if (train_percent+test_percent+analyse_percent > 1){
     std::cout << "Error with percent of data split\n";
     return 1; }
   if (size_of_leaf == 0){
-    std::cout << "set min number of datasets in leaf: ";
+    std::cout << "set min number of Datapoints in leaf: ";
     std::cin >> size_of_leaf;
     std::cout << std::endl;
   }
 
   auto a = create_Data(data_file_name, true);
+  int y = a.size();
+  // for (int i = 700; i<y;i++)
+  //   a.pop_back();
 
   int size_traindata = (int)(train_percent*a.size());
   int size_testdata = (int)(test_percent*a.size());
@@ -58,7 +62,7 @@ int main(){
   // Test if data is correct:
   //Decisiontree::data = a;
   if (testing){
-    for (auto i:Dataset::feature_sets){
+    for (auto i:Datapoint::cat_sets){
       for (auto j:i)
         std::cout << j<< ", ";
       std::cout << std::endl;}  }
@@ -69,9 +73,8 @@ int main(){
   Decisiontree* mytree = new Decisiontree(a, traindata);
   
   if (find_optimum_leaf_size and !load_tree){
-    // for (int i = begin_leaf_size; i<end_leaf_size; i++){
-    for (int i = end_leaf_size; i>=begin_leaf_size; i--){
-
+    for (int i = begin_leaf_size; i<end_leaf_size; i++){
+    // for (int i = end_leaf_size; i>=begin_leaf_size; i--){
       mytree->train(traindata, i);
 
       if (testing){
@@ -85,6 +88,7 @@ int main(){
         best_prediction = total_prediction;
         best_leaf_size = i;
         mytree->save(tree_file_name);
+        mytree->save_for_visualisation(tree_for_visualisation_file_name);
       }
     }
     std::cout << "best tree with leafsize: " << best_leaf_size << " and prediction: "<<best_prediction << std::endl;
@@ -108,13 +112,22 @@ int main(){
     newtree->test(testdata, size_of_leaf);
   }
 
+//percent of all "+" labels in data
+  int counter = 0;
+  for(auto i:a)
+    if (i.label == '+')
+      counter++;
+  std::cout << (double)counter/a.size() *100<< "% of data are labeld with '+'\n";
+
+
+
 
   //make a copy of all analyse data without ethnicity
   // int change_index{3};  //=3 for ethnicity 
   char prediction_befor_change{'x'};
   char prediction_after_change{'x'};
   int analyse_counter{0};
-  std::vector<Dataset> data_to_analyse(a.begin()+ traindata.size()+testdata.size() ,a.end() );
+  std::vector<Datapoint> data_to_analyse(a.begin()+ traindata.size()+testdata.size() ,a.end() );
   for ( auto idata: data_to_analyse){
     prediction_befor_change = mytree->predict(idata);
     idata.cat_features[change_index] = "?"; //stands for no information
@@ -131,9 +144,9 @@ int main(){
   prediction_after_change = 'x';
   analyse_counter = 0;
   std::string biggest_ethnicity{};
-  std::vector<Dataset> data_to_analyse_2(a.begin()+ traindata.size()+testdata.size() ,a.end() );
+  std::vector<Datapoint> data_to_analyse_2(a.begin()+ traindata.size()+testdata.size() ,a.end() );
   std::map<std::string, int> ethnicity_counter;
-  for (auto i:Dataset::feature_sets[change_index])    //all possible ethnicity in map with value 0
+  for (auto i:Datapoint::cat_sets[change_index])    //all possible ethnicity in map with value 0
     ethnicity_counter[i]=0;
 
   for (auto i:a){                     //count how often each ethnicity occurs
