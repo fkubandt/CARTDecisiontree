@@ -44,11 +44,11 @@ class Datapoint
                      int data_counter, std::vector<std::string> &feature_types);
 };
 
-std::vector<Datapoint> create_Data(const std::string filename, bool load_label); //use this one in the main function!!
+std::vector<Datapoint> create_Data(const std::string file_name, bool load_label); //use this one in the main function!!
 std::vector<Datapoint> load_Dataset_from_file(const bool load_label, const std::string file_name);
-void set_feature_set(const std::vector<Datapoint> &data);
-void set_numerical_set(const std::vector<Datapoint> &data);
-void save_Dataset_to_file(const std::string file_name,const  std::vector<Datapoint> &data);
-int skipComments(std::ifstream &fileInputStream);
+void set_cat_set(const std::vector<Datapoint> &data);
+void set_num_set(const std::vector<Datapoint> &data);
+void save_dataset_to_file(const std::string file_name,const  std::vector<Datapoint> &data);
+int skip_comments(std::ifstream &fileInputStream);
 
 #endif

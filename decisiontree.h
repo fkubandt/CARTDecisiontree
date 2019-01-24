@@ -1,6 +1,6 @@
 /*
  * *************************************************************
- *  Filename:     decisiontree.h
+ *  file_name:     decisiontree.h
  *
  *  Description:  Class for Decision Tree
  *
@@ -30,7 +30,6 @@ class Decisiontree
 {
     public:
     std::vector<int> dataslice{};
-    std::vector<Datapoint> data;  
     //separation information:
     Decisiontree* leftchild{nullptr};
     Decisiontree* rightchild{nullptr};
@@ -49,14 +48,16 @@ class Decisiontree
     const char label = '+'; 
     static int n_nodes;
     int node_index = -1;
+
+    static std::vector<Datapoint> data;  
 //
     //Member Functions 
       //constructors
-    Decisiontree(int depth, std::vector<int> dataslice, std::vector<Datapoint> data);
+    Decisiontree(int depth, std::vector<int> dataslice);
     Decisiontree(std::vector<Datapoint> data, std::vector<int> dataslice_);
     explicit Decisiontree() = default;
-    // Decisiontree();
-    ~Decisiontree();   
+    ~Decisiontree(); 
+
       //training
     float gini_impurity(std::vector<int> data_indices) const;
     float max_information_gain(std::vector<int> data_indices);
@@ -71,12 +72,12 @@ class Decisiontree
     char predict(const Datapoint &data, float &certainty_);
     bool is_in_left_child(const Datapoint &data);
       //data export
-    void save(std::string filename);
+    void save(std::string file_name);
     void save_to_file(std::ofstream &file);
-    void save_for_visualisation(std::string filename);
+    void save_for_visualisation(std::string file_name);
     void save_node_for_visualisation(std::ofstream &file, int parent_id);
       //data import (only for predictions!)
-    void load_from_file(std::string filename_tree, std::string filename_data);  //no real dataslice, just the size fits!!!
+    void load_from_file(std::string file_name_tree, std::string file_name_data);  //no real dataslice, just the size fits!!!
     void load_node_from_file(std::ifstream &file, int &counter);
     void set_node(std::ifstream &file);
 
@@ -85,8 +86,6 @@ class Decisiontree
     float gini_impurity_of_all_leaves();
     float test(std::vector<int> &testdata, const int leafsize);
 
-
-    //TODO: int load(std::string filename, float* dataset);
 };
 
 
@@ -119,10 +118,7 @@ void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
     create_leaf(data_indices);
     return;
   }
-  // if(sep_feature_type == 'n')
-  //   split_data(data_indices, left_data, right_data, sep_feature_type, sep_feature_index, sep_threshold);
-  // else if(sep_feature_type == 'c')
-  //   split_data(data_indices, left_data, right_data, sep_feature_type, sep_feature_index, sep_category_flag);
+
   if(sep_feature_type == 'n')
     split_data_num(data_indices, left_data, right_data, sep_feature_index, sep_threshold);
   else if(sep_feature_type == 'c')
@@ -145,54 +141,14 @@ void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
     //exit_statement = (data_indices.size() > 5 or gini_imp == 0);
   }
   if(create_children){
-      leftchild = new Decisiontree(depth+1, left_data, data);
+      leftchild = new Decisiontree(depth+1, left_data);
       leftchild->train(left_data, exit_condition);
-      rightchild = new Decisiontree(depth+1, right_data, data);
+      rightchild = new Decisiontree(depth+1, right_data);
       rightchild->train(right_data, exit_condition);
   }
   else{
     create_leaf(data_indices);
   }
 };//train
-
-
-/* ************************************************************* *
- *                         split_data                            *
- * ************************************************************* */
-// template<typename T> void Decisiontree::split_data(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, 
-//                                                    char sep_ft_type, int sep_ft_index, T threshold){
-  /* 
-   * splits the data by collecting the indices that belong to the right and left
-   * group each in left_data and right_data, using a given feature and threshold. 
-   *                                                                           */
-/*
-if(sep_ft_type == 'n'){
-    for (auto idata : data_indices){
-      Datapoint thisdata=data[idata];
-      if (thisdata.num_features[sep_ft_index] <= threshold){      //TODO: decide between string and char!
-        left_data.push_back(idata);
-      }
-      else{
-        right_data.push_back(idata);
-      }
-    }//iterate over data
-  }//seperate by numeric
-  else if(sep_ft_type == 'c'){
-    for (auto idata : data_indices){
-      Datapoint thisdata=data[idata];
-      if (thisdata.cat_features[sep_ft_index] == threshold)      
-        left_data.push_back(idata);
-      else
-        right_data.push_back(idata);
-    }//iterate over data
-    if (testing)
-      std::cout << "left data in split" << left_data.size() << std::endl;
-  }//seperate by category
-  else{
-    if (testing)
-      std::cout << sep_ft_type << "unexpected value for separation feature type, split interrupted at node " << node_index << std::endl;
-  }
-}//split_data
-*/
 
 #endif

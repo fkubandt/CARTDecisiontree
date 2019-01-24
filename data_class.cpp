@@ -53,11 +53,11 @@ void Datapoint::set_features(std::ifstream &inputFile, const std::string &num, c
 
 
 /* returns all data from file and sets the sets with all possible values */
-std::vector<Datapoint> create_Data(const std::string filename, bool load_label){
+std::vector<Datapoint> create_Data(const std::string file_name, bool load_label){
   std::vector<Datapoint> data;
-  data = load_Dataset_from_file(load_label, filename);
-  set_feature_set(data);
-  set_numerical_set(data);
+  data = load_Dataset_from_file(load_label, file_name);
+  set_cat_set(data);
+  set_num_set(data);
   return data;
 }
 
@@ -68,7 +68,7 @@ std::vector<Datapoint> load_Dataset_from_file(const bool load_label, const std::
 
   std::ifstream inputFile;
   inputFile.open(file_name);
-  skipComments(inputFile);
+  skip_comments(inputFile);
   inputFile >> Datapoint::nr_features;
   printf("nrFeatures: %d\n",Datapoint::nr_features);
   std::string tmp;
@@ -136,7 +136,7 @@ std::vector<Datapoint> load_Dataset_from_file(const bool load_label, const std::
       only usefull after training and evaluating TESTDATA
       order of features is now different. first numerical then categorical    
   */
-void save_Dataset_to_file(const std::string file_name, const std::vector<Datapoint> &data){
+void save_dataset_to_file(const std::string file_name, const std::vector<Datapoint> &data){
   std::ofstream file;
   file.open(file_name);
   file << std::endl;
@@ -167,7 +167,7 @@ void save_Dataset_to_file(const std::string file_name, const std::vector<Datapoi
 }
 
 /* collects als possible sets for each feature category */
-void set_feature_set(const std::vector<Datapoint> &data){
+void set_cat_set(const std::vector<Datapoint> &data){
   std::string tmp;
   int nrCat = data[0].cat_features.size();
   Datapoint::cat_sets.resize(nrCat);
@@ -180,7 +180,7 @@ void set_feature_set(const std::vector<Datapoint> &data){
 }
 
 /* collects als possible sets for each numerical category */
-void set_numerical_set(const std::vector<Datapoint> &data){
+void set_num_set(const std::vector<Datapoint> &data){
   float tmp=0.;
   int nrCat = data[0].num_features.size();
   Datapoint::num_sets.resize(nrCat);
@@ -192,7 +192,7 @@ void set_numerical_set(const std::vector<Datapoint> &data){
   } // i++
 }
 
-int skipComments(std::ifstream &fileInputStream)  //helper function from lecture
+int skip_comments(std::ifstream &fileInputStream)  //helper function from lecture
 {
  static int nComments = 0;
  char inChar = fileInputStream.peek();     // peak first char of file

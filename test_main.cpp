@@ -170,7 +170,7 @@ int main(){
   delete mytree;
 
   if (save_file)    //save dataset    //until now not needed because we do not change any data
-    save_Dataset_to_file("abc.dat", a);
+    save_dataset_to_file("abc.dat", a);
   std::string command = "dot ";
   command.append(tree_for_visualisation_file_name);
   command.append(" -Tpdf -o ");

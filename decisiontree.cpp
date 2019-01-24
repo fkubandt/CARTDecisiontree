@@ -20,7 +20,9 @@ extern bool testing;
 //
 
 int Decisiontree::n_nodes = 0;
-Decisiontree::Decisiontree(int depth, std::vector<int> dataslice, std::vector<Datapoint> data):depth(depth), dataslice(dataslice), data(data){
+std::vector<Datapoint> Decisiontree::data{};
+
+Decisiontree::Decisiontree(int depth, std::vector<int> dataslice):depth(depth), dataslice(dataslice){
   node_index = n_nodes;
   n_nodes += 1;
   if (testing)
@@ -29,6 +31,7 @@ Decisiontree::Decisiontree(int depth, std::vector<int> dataslice, std::vector<Da
 
 
 Decisiontree::Decisiontree(std::vector<Datapoint> data_, std::vector<int> dataslice_){
+  Decisiontree::data = data_; 
   depth = 0;
   node_index = n_nodes;
   n_nodes += 1;
@@ -286,9 +289,9 @@ char Decisiontree::predict(const Datapoint &data, float &certainty_){
  *                       data export                             *
  * ************************************************************* */
 /* for saving and visualisation of the tree */
-void Decisiontree::save(std::string filename){
+void Decisiontree::save(std::string file_name){
   std::ofstream file;
-  file.open(filename);
+  file.open(file_name);
   std::cout << "saving tree.........  ";
   file << "depth, is_leaf, sep_feature_type, sep_feature_index, sep_threshold, sep_category_flag, prediction, certainty, nsample\n";
   save_to_file(file);
@@ -307,10 +310,10 @@ void Decisiontree::save_to_file(std::ofstream &file){
 }
 
 
-void Decisiontree::save_for_visualisation(std::string filename){
+void Decisiontree::save_for_visualisation(std::string file_name){
   int node_nr = 0;
   std::ofstream file;
-  file.open(filename);
+  file.open(file_name);
   std::cout << "saving tree for visualisation...    ";
   file << "digraph Tree {\n" << "node [shape=box] ;\n";
   std::string feature_name{};
@@ -375,13 +378,13 @@ links ist wahr
 
 /*loading the tree and the dataset from files
   no training is needed but the dataslice and gini_imp are not saved and not loaded!*/
-void Decisiontree::load_from_file(std::string filename_tree, std::string filename_data){
+void Decisiontree::load_from_file(std::string file_name_tree, std::string file_name_data){
   std::ifstream file;
-  file.open(filename_tree);
+  file.open(file_name_tree);
   std::string line;
   std::getline(file, line);
   int counter = 0;
-  this->data = create_Data(filename_data, true);
+  this->data = create_Data(file_name_data, true);
   this->load_node_from_file(file, counter);
   file.close();
 }
