@@ -110,6 +110,7 @@ float Decisiontree::max_information_gain(std::vector<int> data_indices){
   int num_thresholds;
   std::set<float> this_features_values;
   std::set<std::string> this_features_categories;
+  std::string flag{};
 //
   std::vector<std::set<float>> possible_values = Datapoint::num_sets;           //all possible values for each numerical feature
   std::vector<std::set<std::string>> possible_categories = Datapoint::cat_sets; //all possible values for each categorical feature 
@@ -155,14 +156,15 @@ float Decisiontree::max_information_gain(std::vector<int> data_indices){
     this_features_categories = possible_categories[ifeatures];
     num_thresholds = this_features_categories.size();
     for(auto ithresholds : this_features_categories){
-      std::string flag = ithresholds;
+      flag = ithresholds;
       left_data.clear();
       right_data.clear();
-      // split_data(data_indices, left_data, right_data, 'c', ifeatures, flag[0]);
       split_data_cat(data_indices, left_data, right_data, ifeatures, flag);
+      p_left = (double)left_data.size()/ntotal_data;
+      p_right = (double)right_data.size()/ntotal_data;
       
       if(left_data.size() != 0 and right_data.size() != 0){
-        information_gain = impurity_parent - gini_impurity(left_data) - gini_impurity(right_data);
+        information_gain = impurity_parent - p_left * gini_impurity(left_data) - p_right * gini_impurity(right_data);
         if (testing)
           std::cout << "information gain " << information_gain << std::endl;
         if(information_gain > best_information_gain){
@@ -203,10 +205,10 @@ void Decisiontree::split_data_num(std::vector<int> data_indices, std::vector<int
   if (testing)
     std::cout << "left data in split" << left_data.size() << std::endl;
 }
-void Decisiontree::split_data_cat(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, std::string threshold){
+void Decisiontree::split_data_cat(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, std::string flag){
   for (auto idata : data_indices){
     Datapoint thisdata=data[idata];
-    if (thisdata.cat_features[sep_ft_index] == threshold)      
+    if (thisdata.cat_features[sep_ft_index] == flag)      
       left_data.push_back(idata);
     else
       right_data.push_back(idata);
@@ -384,7 +386,7 @@ void Decisiontree::load_from_file(std::string file_name_tree, std::string file_n
   std::string line;
   std::getline(file, line);
   int counter = 0;
-  this->data = create_Data(file_name_data, true);
+  this->data = create_data(file_name_data, true);
   this->load_node_from_file(file, counter);
   file.close();
 }

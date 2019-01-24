@@ -28,7 +28,7 @@ extern bool testing;
 
 class Decisiontree
 {
-    public:
+    private:
     std::vector<int> dataslice{};
     //separation information:
     Decisiontree* leftchild{nullptr};
@@ -41,8 +41,6 @@ class Decisiontree
     float certainty = 0.;
     char prediction = 'x';
     float gini_imp = -1;
-//
-    public:
     int depth = 0;
     bool is_leaf = false;
     const char label = '+'; 
@@ -51,38 +49,43 @@ class Decisiontree
 
     static std::vector<Datapoint> data;  
 //
+    public:
     //Member Functions 
       //constructors
     Decisiontree(int depth, std::vector<int> dataslice);
     Decisiontree(std::vector<Datapoint> data, std::vector<int> dataslice_);
     explicit Decisiontree() = default;
     ~Decisiontree(); 
-
       //training
+    public:
+    template<typename T> void train(std::vector<int> data_indices, T exit_condition);
+    private:
     float gini_impurity(std::vector<int> data_indices) const;
     float max_information_gain(std::vector<int> data_indices);
     void create_leaf(std::vector<int> data_indices);
-    template<typename T> void train(std::vector<int> data_indices, T exit_condition);
-
     void split_data_num(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, float threshold);
-    void split_data_cat(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, std::string threshold);
+    void split_data_cat(std::vector<int> data_indices, std::vector<int> &left_data, std::vector<int> &right_data, int sep_ft_index, std::string flag);
 
       //prediction
+    private:
+    bool is_in_left_child(const Datapoint &data);
+    public:
     char predict(const Datapoint &data);
     char predict(const Datapoint &data, float &certainty_);
-    bool is_in_left_child(const Datapoint &data);
-      //data export
+
+      //data im/export
+    public:
     void save(std::string file_name);
-    void save_to_file(std::ofstream &file);
     void save_for_visualisation(std::string file_name);
-    void save_node_for_visualisation(std::ofstream &file, int parent_id);
-      //data import (only for predictions!)
     void load_from_file(std::string file_name_tree, std::string file_name_data);  //no real dataslice, just the size fits!!!
+    private:
+    void save_to_file(std::ofstream &file);
+    void save_node_for_visualisation(std::ofstream &file, int parent_id);
     void load_node_from_file(std::ifstream &file, int &counter);
     void set_node(std::ifstream &file);
 
-
     //for testing
+    public:
     float gini_impurity_of_all_leaves();
     float test(std::vector<int> &testdata, const int leafsize);
 

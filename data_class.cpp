@@ -53,16 +53,16 @@ void Datapoint::set_features(std::ifstream &inputFile, const std::string &num, c
 
 
 /* returns all data from file and sets the sets with all possible values */
-std::vector<Datapoint> create_Data(const std::string file_name, bool load_label){
+std::vector<Datapoint> create_data(const std::string file_name, bool load_label){
   std::vector<Datapoint> data;
-  data = load_Dataset_from_file(load_label, file_name);
+  data = load_dataset_from_file(load_label, file_name);
   set_cat_set(data);
   set_num_set(data);
   return data;
 }
 
 /* load all Datapoints from file */
-std::vector<Datapoint> load_Dataset_from_file(const bool load_label, const std::string file_name){
+std::vector<Datapoint> load_dataset_from_file(const bool load_label, const std::string file_name){
   std::vector<std::string> feature_names{};
   std::vector<std::string> feature_types{};
 

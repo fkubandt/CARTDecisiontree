@@ -15,7 +15,7 @@
 
 bool load_tree = false;
 bool save_file = false;
-bool find_optimum_leaf_size = false;
+bool find_optimum_leaf_size = true;
 int size_of_leaf = 20;
 int begin_leaf_size = 1;
 int end_leaf_size = 50;
@@ -43,7 +43,7 @@ int main(){
     std::cout << std::endl;
   }
 
-  auto a = create_Data(data_file_name, true);
+  auto a = create_data(data_file_name, true);
   int y = a.size();
   // for (int i = 700; i<y;i++)
   //   a.pop_back();
@@ -73,13 +73,13 @@ int main(){
   Decisiontree* mytree = new Decisiontree(a, traindata);
   
   if (find_optimum_leaf_size and !load_tree){
-    for (int i = begin_leaf_size; i<end_leaf_size; i++){
-    // for (int i = end_leaf_size; i>=begin_leaf_size; i--){
+    // for (int i = begin_leaf_size; i<end_leaf_size; i++){
+    for (int i = end_leaf_size; i>=begin_leaf_size; i--){
       mytree->train(traindata, i);
 
       if (testing){
         float gini = mytree->gini_impurity_of_all_leaves();
-        std::cout << "gini at node " << mytree->gini_imp << std::endl;
+        //std::cout << "gini at node " << mytree->gini_imp << std::endl;
         std::cout << "gini of all leaves " << gini << std::endl;
         std::cout << "trained" << std::endl;  }
 
