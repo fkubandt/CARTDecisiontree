@@ -58,7 +58,9 @@ class Decisiontree
     ~Decisiontree(); 
       //training
     public:
-    template<typename T> void train(std::vector<int> data_indices, T exit_condition);
+    template<typename T> void train(std::vector<int> data_indices, T exit_condition=0.);
+    template<typename T> void train(T exit_condition=0.);
+
     private:
     float gini_impurity(std::vector<int> data_indices) const;
     float max_information_gain(std::vector<int> data_indices);
@@ -69,6 +71,7 @@ class Decisiontree
       //prediction
     private:
     bool is_in_left_child(const Datapoint &data);
+    bool handle_missing_data(const Datapoint &data);
     public:
     char predict(const Datapoint &data);
     char predict(const Datapoint &data, float &certainty_);
@@ -102,6 +105,10 @@ class Decisiontree
 /* ************************************************************* *
  *                             train                             *
  * ************************************************************* */
+template<typename T>
+void Decisiontree::train(T exit_condition){
+  train(dataslice, exit_condition);
+}
 template<typename T> 
 void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
   /* 
@@ -145,9 +152,9 @@ void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
   }
   if(create_children){
       leftchild = new Decisiontree(depth+1, left_data);
-      leftchild->train(left_data, exit_condition);
+      leftchild->train(exit_condition);
       rightchild = new Decisiontree(depth+1, right_data);
-      rightchild->train(right_data, exit_condition);
+      rightchild->train(exit_condition);
   }
   else{
     create_leaf(data_indices);

@@ -250,7 +250,9 @@ char Decisiontree::predict(const Datapoint &data){
     return prediction;
   }
   else{
-    if (is_in_left_child(data))
+    if (handle_missing_data(data))
+      leftchild->predict(data);
+    else if (is_in_left_child(data))
       leftchild->predict(data);
     else
       rightchild->predict(data);
@@ -270,6 +272,17 @@ char Decisiontree::predict(const Datapoint &data, float &certainty_){
   }
 }
 
+bool Decisiontree::handle_missing_data(const Datapoint &data){
+  bool missing = false;
+  if (sep_feature_type == 'n'){
+    float missing_value = 0.;  //TODO smallest float number? pi? something that is unlikely to appear in the true data
+    missing = data.num_features[sep_feature_index] == missing_value;
+  }
+  if (missing and (leftchild->dataslice.size() > rightchild->dataslice.size())){
+    return true;
+  }
+  else return false;
+}
 
   bool Decisiontree::is_in_left_child(const Datapoint &data){
   if (sep_feature_type == 'c'){
