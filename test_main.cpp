@@ -47,7 +47,7 @@ int main(){
     std::cout << std::endl;
   }
 
-  auto a = create_data(data_file_name, true);
+  auto a = create_dataset(data_file_name, true);
   int y = a.size();
   // for (int i = 700; i<y;i++)
   //   a.pop_back();
