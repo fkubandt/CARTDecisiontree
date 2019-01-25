@@ -43,17 +43,17 @@ class Decisiontree
     float gini_imp = -1;
     int depth = 0;
     bool is_leaf = false;
-    const char label = '+'; 
-    static int n_nodes;
     int node_index = -1;
 
+    static const char label; 
+    static int n_nodes;
     static std::vector<Datapoint> data;  
 //
     public:
     //Member Functions 
       //constructors
     Decisiontree(int depth, std::vector<int> dataslice);
-    Decisiontree(std::vector<Datapoint> data, std::vector<int> dataslice_);
+    Decisiontree(std::vector<Datapoint> data, std::vector<int> training_data_indices);
     explicit Decisiontree() = default;
     ~Decisiontree(); 
       //training
@@ -105,10 +105,19 @@ class Decisiontree
 /* ************************************************************* *
  *                             train                             *
  * ************************************************************* */
+/**
+ * to build the binary decisiontree with an exitcondition
+ * int for min_leaf_size
+ * float for gini_impurity
+**/
 template<typename T>
 void Decisiontree::train(T exit_condition){
   train(dataslice, exit_condition);
 }
+
+/**
+ * trainfunction inside of class
+**/
 template<typename T> 
 void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
   /* 

@@ -12,13 +12,17 @@ std::vector<float> Datapoint::average_num_values{};
 int Datapoint::nr_features{};
 
 extern bool testing;  //global variable for testing
-
+/**
+ * Constructor for a Datapoint
+**/
 Datapoint::Datapoint(const int nr_features_){
     num_features.reserve(nr_features_);
     cat_features.reserve(nr_features_);
   }
 
-//sets all features of one Datapoint
+/**
+ * sets all features of one Datapoint from one line of an ifstream
+**/
 void Datapoint::set_features(std::ifstream &inputFile, const std::string &num, const bool set_label,
                              int data_counter, std::vector<std::string> &feature_types){ 
   double tmp_num;
@@ -52,7 +56,9 @@ void Datapoint::set_features(std::ifstream &inputFile, const std::string &num, c
  }
 
 
-/* returns all data from file and sets the sets with all possible values */
+/**
+ * returns vec of Datapoints loaded from file and sets the sets with all possible values
+**/
 std::vector<Datapoint> create_data(const std::string file_name, bool load_label){
   std::vector<Datapoint> data;
   data = load_dataset_from_file(load_label, file_name);
@@ -61,7 +67,9 @@ std::vector<Datapoint> create_data(const std::string file_name, bool load_label)
   return data;
 }
 
-/* load all Datapoints from file */
+/**
+ * load all Datapoints from a file
+**/
 std::vector<Datapoint> load_dataset_from_file(const bool load_label, const std::string file_name){
   std::vector<std::string> feature_names{};
   std::vector<std::string> feature_types{};
@@ -132,10 +140,10 @@ std::vector<Datapoint> load_dataset_from_file(const bool load_label, const std::
   return data;
 }
 
-  /*  save Dataset with label to file 
-      only usefull after training and evaluating TESTDATA
-      order of features is now different. first numerical then categorical    
-  */
+/**
+ * save Dataset with label to file 
+ * order of features is now different. first numerical then categorical    
+**/
 void save_dataset_to_file(const std::string file_name, const std::vector<Datapoint> &data){
   std::ofstream file;
   file.open(file_name);
@@ -145,17 +153,15 @@ void save_dataset_to_file(const std::string file_name, const std::vector<Datapoi
   for(int i = 1; i<Datapoint::num_feature_id.size(); i++){
     file << "," << Datapoint::num_feature_id[i];
   }
-  file << Datapoint::Datapoint::cat_feature_id[0];
-  for(int i = 1; i<Datapoint::Datapoint::cat_feature_id.size(); i++){
+  for(int i = 0; i<Datapoint::Datapoint::cat_feature_id.size(); i++){
     file << "," << Datapoint::Datapoint::cat_feature_id[i];
   }
   file << "," << "label" <<std::endl;
   for (int i = 0;i<Datapoint::num_feature_id.size(); i++)
     file << "num,";
-  file << "cat";
-  for (int i = 1; i<Datapoint::Datapoint::cat_feature_id.size(); i++)
-    file << ",cat";
-  file << ",class\n";
+  for (int i = 0; i<Datapoint::Datapoint::cat_feature_id.size(); i++)
+    file << "cat,";
+  file << "class\n";
   for(auto i:data){
     for(auto j:i.num_features)
       file << j << ",";
@@ -166,7 +172,9 @@ void save_dataset_to_file(const std::string file_name, const std::vector<Datapoi
   file.close();
 }
 
-/* collects als possible sets for each feature category */
+/**
+ * collects als possible sets for each feature category
+**/
 void set_cat_set(const std::vector<Datapoint> &data){
   std::string tmp;
   int nrCat = data[0].cat_features.size();
@@ -179,7 +187,9 @@ void set_cat_set(const std::vector<Datapoint> &data){
   } // i++
 }
 
-/* collects als possible sets for each numerical category */
+/**
+ * collects als possible sets for each numerical category
+**/
 void set_num_set(const std::vector<Datapoint> &data){
   float tmp=0.;
   int nrCat = data[0].num_features.size();
@@ -192,6 +202,9 @@ void set_num_set(const std::vector<Datapoint> &data){
   } // i++
 }
 
+/**
+ * skips comments in the load file
+**/
 int skip_comments(std::ifstream &fileInputStream)  //helper function from lecture
 {
  static int nComments = 0;
