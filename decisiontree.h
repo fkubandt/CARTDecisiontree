@@ -43,21 +43,22 @@ class Decisiontree
     float gini_imp = -1;
     int depth = 0;
     bool is_leaf = false;
-    const char label = '+'; 
-    static int n_nodes;
     int node_index = -1;
 
+    static const char label; 
+    static int n_nodes;
     static std::vector<Datapoint> data;  
 //
     public:
     //Member Functions 
       //constructors
     Decisiontree(int depth, std::vector<int> dataslice);
-    Decisiontree(std::vector<Datapoint> data, std::vector<int> dataslice_);
+    Decisiontree(std::vector<Datapoint> data, std::vector<int> training_data_indices);
     explicit Decisiontree() = default;
     ~Decisiontree(); 
       //training
     public:
+    template<typename T> void train(T exit_condition);
     template<typename T> void train(std::vector<int> data_indices, T exit_condition);
     private:
     float gini_impurity(std::vector<int> data_indices) const;
@@ -102,6 +103,19 @@ class Decisiontree
 /* ************************************************************* *
  *                             train                             *
  * ************************************************************* */
+/**
+ * to build the binary decisiontree with an exitcondition
+ * int for min_leaf_size
+ * float for gini_impurity
+**/
+template<typename T>
+void Decisiontree::train(T exit_condition){
+  train(dataslice, exit_condition);
+}
+
+/**
+ * trainfunction inside of class
+**/
 template<typename T> 
 void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
   /* 
@@ -145,9 +159,9 @@ void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
   }
   if(create_children){
       leftchild = new Decisiontree(depth+1, left_data);
-      leftchild->train(left_data, exit_condition);
+      leftchild->train(exit_condition);
       rightchild = new Decisiontree(depth+1, right_data);
-      rightchild->train(right_data, exit_condition);
+      rightchild->train(exit_condition);
   }
   else{
     create_leaf(data_indices);

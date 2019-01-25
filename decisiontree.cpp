@@ -22,6 +22,9 @@ extern bool testing;
 int Decisiontree::n_nodes = 0;
 std::vector<Datapoint> Decisiontree::data{};
 
+/**
+ * Constructor, only use inside the class
+**/
 Decisiontree::Decisiontree(int depth, std::vector<int> dataslice):depth(depth), dataslice(dataslice){
   node_index = n_nodes;
   n_nodes += 1;
@@ -29,22 +32,20 @@ Decisiontree::Decisiontree(int depth, std::vector<int> dataslice):depth(depth), 
     std::cout << "node " << node_index  << "created" << std::endl;
 }
 
-
-Decisiontree::Decisiontree(std::vector<Datapoint> data_, std::vector<int> dataslice_){
+/**
+ * Constructor to use outside of class
+**/
+Decisiontree::Decisiontree(std::vector<Datapoint> data_, std::vector<int> training_data_indices){
   Decisiontree::data = data_; 
   depth = 0;
   node_index = n_nodes;
   n_nodes += 1;
-  // std::vector<Datapoint> this.data = data_;
   this->data = data_;
-  // dataslice should include all indices in data
-  // dataslice.reserve(data.size());
-  // for(int i=0; i<data.size();i++){
-  //   dataslice.push_back(i);
-  // }
-  dataslice = dataslice_;
+  dataslice = training_data_indices;
 }
-
+/**
+ * Destructor
+**/
 Decisiontree::~Decisiontree(){
   if (testing)
     std::cout << "Destructor called" << std::endl;
@@ -62,12 +63,11 @@ Decisiontree::~Decisiontree(){
 //in decisiontree.h
 
 /** 
-   calculate the gini impurity I_G for binary classes +/- as 
-   I_G = p_+(1-p_+) + p_-(1-p_-) = 2*p_+(1-p_+) 
-   This gives the probability for every item of a group being 
-   incorrectly labeled when randomly matched with a label of that 
-   group
-                                                                */
+ * calculate the gini impurity I_G for binary classes +/- as 
+ * I_G = p_+(1-p_+) + p_-(1-p_-) = 2*p_+(1-p_+) 
+ * This gives the probability for every item of a group being 
+ * incorrectly labeled when randomly matched with a label of that group
+**/
 float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
   int positive_data = 0;                         //count the + labels on the left
   int ntotal_data = data_indices.size();
@@ -85,10 +85,10 @@ float Decisiontree::gini_impurity(std::vector<int> data_indices) const{
 
 
 /**
-   Iterate over all possible features and thresholds and maximizes 
-   to find max(I_G,parent - p_left * I_G,left - p_right * I_G,right)
-   with p_i = numdata_i/numdata_parent
-                                                                  */
+ * Iterate over all possible features and thresholds and maximizes
+ * to find max(I_G,parent - p_left * I_G,left - p_right * I_G,right)
+ * with p_i = numdata_i/numdata_parent
+**/
 float Decisiontree::max_information_gain(std::vector<int> data_indices){
   //sep_feature_type ='t';  
   if (testing)
@@ -130,9 +130,9 @@ float Decisiontree::max_information_gain(std::vector<int> data_indices){
       right_data.clear();
       // split_data(data_indices, left_data, right_data, 'n', ifeatures, threshold);
       split_data_num(data_indices, left_data, right_data, ifeatures, threshold);
-      p_left = (double)left_data.size()/ntotal_data;
-      p_right = (double)right_data.size()/ntotal_data;
-      if(left_data.size() != 0 and right_data.size() != 0){
+      if(!left_data.empty() and !right_data.empty() ){
+        p_left = (double)left_data.size()/ntotal_data;
+        p_right = (double)right_data.size()/ntotal_data;
         information_gain = impurity_parent - p_left*gini_impurity(left_data) - p_right*gini_impurity(right_data);
         if (testing){
           std::cout << "information gain " << information_gain << " for gain = " << impurity_parent
@@ -160,10 +160,10 @@ float Decisiontree::max_information_gain(std::vector<int> data_indices){
       left_data.clear();
       right_data.clear();
       split_data_cat(data_indices, left_data, right_data, ifeatures, flag);
-      p_left = (double)left_data.size()/ntotal_data;
-      p_right = (double)right_data.size()/ntotal_data;
-      
-      if(left_data.size() != 0 and right_data.size() != 0){
+
+      if(!left_data.empty() and !right_data.empty() ){
+        p_left = (double)left_data.size()/ntotal_data;
+        p_right = (double)right_data.size()/ntotal_data;
         information_gain = impurity_parent - p_left * gini_impurity(left_data) - p_right * gini_impurity(right_data);
         if (testing)
           std::cout << "information gain " << information_gain << std::endl;
@@ -219,8 +219,8 @@ void Decisiontree::split_data_cat(std::vector<int> data_indices, std::vector<int
 
 
 /**
-   store prediction and certainty of prediction and set is_leaf true
-                                                                  */
+ * store prediction and certainty of prediction and set is_leaf true
+**/
 void Decisiontree::create_leaf(std::vector<int> data_indices){
     if (testing)
       std::cout << "training done" << std::endl;
@@ -245,6 +245,9 @@ void Decisiontree::create_leaf(std::vector<int> data_indices){
 /* ************************************************************* *
  *                       prediction                              *
  * ************************************************************* */
+/**
+ * predict the label
+**/
 char Decisiontree::predict(const Datapoint &data){
   if (is_leaf){
     return prediction;
@@ -290,28 +293,35 @@ char Decisiontree::predict(const Datapoint &data, float &certainty_){
 /* ************************************************************* *
  *                       data export                             *
  * ************************************************************* */
-/* for saving and visualisation of the tree */
+/**
+ * for saving and visualisation of the tree
+**/
 void Decisiontree::save(std::string file_name){
   std::ofstream file;
   file.open(file_name);
   std::cout << "saving tree.........  ";
-  file << "depth, is_leaf, sep_feature_type, sep_feature_index, sep_threshold, sep_category_flag, prediction, certainty, nsample\n";
+  file << "depth, is_leaf, sep_feature_type, sep_feature_index, sep_threshold, sep_category_flag, prediction, certainty, nsample, gini_imp\n";
   save_to_file(file);
   file.close();
   std::cout << "completed\n";
 }
-
+/**
+ * helper func for save()
+ * rekursive save of all data of the tree
+**/
 void Decisiontree::save_to_file(std::ofstream &file){
   file << depth <<"," << is_leaf <<"," << sep_feature_type <<"," << sep_feature_index;
   file  <<"," << sep_threshold <<"," << sep_category_flag <<"," << prediction;
-  file  <<"," << certainty << "," << dataslice.size() << std::endl;
+  file  <<"," << certainty << "," << dataslice.size() << gini_imp << std::endl;
   if (!is_leaf){
     leftchild->save_to_file(file);
     rightchild->save_to_file(file);
   }
 }
 
-
+/**
+ * saves all important information for a visualisation with dot
+**/
 void Decisiontree::save_for_visualisation(std::string file_name){
   int node_nr = 0;
   std::ofstream file;
@@ -340,6 +350,9 @@ void Decisiontree::save_for_visualisation(std::string file_name){
   std::cout << "completed\n";
 }
 
+/**
+ * helperfunction for save_for_visualisation
+**/
 void Decisiontree::save_node_for_visualisation(std::ofstream &file, int parent_id){
   if (!is_leaf){    //is a node
     std::string feature_name{};
@@ -378,8 +391,10 @@ links ist wahr
  *                       data import                             *
  * ************************************************************* */
 
-/*loading the tree and the dataset from files
-  no training is needed but the dataslice and gini_imp are not saved and not loaded!*/
+/**
+ * loading the tree and the dataset from files
+ * no training is needed but the dataslice is not saved and not loaded!
+**/
 void Decisiontree::load_from_file(std::string file_name_tree, std::string file_name_data){
   std::ifstream file;
   file.open(file_name_tree);
@@ -391,6 +406,10 @@ void Decisiontree::load_from_file(std::string file_name_tree, std::string file_n
   file.close();
 }
 
+/**
+ * sets all variables of one node from one line of ifstream
+ * has to be formated like a data created from func save()
+**/
 void Decisiontree::set_node(std::ifstream &file){
   std::string tmp, line;
   std::getline(file, line);
@@ -413,8 +432,13 @@ void Decisiontree::set_node(std::ifstream &file){
   this->certainty = atof(tmp.c_str());
   getline(iline, tmp, ',');
   this->dataslice = std::vector<int>(atoi(tmp.c_str()),0);    //has only the size of dataslice!!!
+  getline(iline, tmp, ',');
+  this->gini_imp = atof(tmp.c_str());
 }
 
+/**
+ * load all nodes rekursive from ifstream
+**/
 void Decisiontree::load_node_from_file(std::ifstream &file, int &counter){
   this->set_node(file);
   this->node_index = counter;
@@ -428,7 +452,9 @@ void Decisiontree::load_node_from_file(std::ifstream &file, int &counter){
 }
 
 
-//for testing purposes
+/**
+ * returns the sum of the gini impurity of all leaves
+**/
 float Decisiontree::gini_impurity_of_all_leaves(){
   float full_gini = 0;
   if (is_leaf == true){
@@ -444,14 +470,18 @@ float Decisiontree::gini_impurity_of_all_leaves(){
   return full_gini;
 }
 
+/**
+ * ratio of right labled to all datapoints indices in testdata
+ * leafsize just for output in terminal
+**/
 float Decisiontree::test(std::vector<int> &testdata, const int leafsize){
   char prediction{'x'};
   int counter{0};
   for (auto i:testdata){
       prediction = this->predict(data[i]);
       if (testing){
-        std::cout << "Label für Person " << i <<": "<<data[i].label <<std::endl;
-        std::cout << "Vorhersage für Person " << i <<": "<< prediction <<std::endl;}
+        std::cout << "label for person " << i <<": "<<data[i].label <<std::endl;
+        std::cout << "predicion for person " << i <<": "<< prediction <<std::endl;}
       if (prediction == data[i].label)
         counter++;
     }

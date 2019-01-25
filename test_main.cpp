@@ -29,7 +29,11 @@ std::string data_file_name = "Data/shuffled_credit_approval_australia.dat";
 std::string tree_file_name = "tree.dat";
 std::string tree_for_visualisation_file_name = "visualisierung.dot";
 std::string visualized_tree_file_name = "tree.pdf";
-int change_index{3};  //=3 for ethnicity 
+std::string train_result_file_name = "results.txt";
+int change_index{4};  //=4 for ethnicity 
+const char Decisiontree::label = '+';
+
+void analyse_all_cat_features(const std::vector<Datapoint> &a, const std::vector<Datapoint> &data_to_analyse_2, Decisiontree* mytree);
 
 int main(){
   // char prediction{'x'};
@@ -59,8 +63,7 @@ int main(){
   std::iota(analysedata.begin(), analysedata.end(), size_testdata+size_traindata);
 
   std::cout << a.size() << " Test " << size_traindata << " "<<size_testdata << " "<<size_analysedata<< std::endl;
-  // Test if data is correct:
-  //Decisiontree::data = a;
+
   if (testing){
     for (auto i:Datapoint::cat_sets){
       for (auto j:i)
@@ -69,9 +72,15 @@ int main(){
 
   int best_leaf_size = 0;
   double best_prediction = 0.;
+  float train_prediction = 0.;
+  float total_prediction = 0.;
 
   Decisiontree* mytree = new Decisiontree(a, traindata);
   
+  std::ofstream trainresults;
+  trainresults.open(train_result_file_name);
+  
+
   if (find_optimum_leaf_size and !load_tree){
     // for (int i = begin_leaf_size; i<end_leaf_size; i++){
     for (int i = end_leaf_size; i>=begin_leaf_size; i--){
@@ -83,7 +92,11 @@ int main(){
         std::cout << "gini of all leaves " << gini << std::endl;
         std::cout << "trained" << std::endl;  }
 
-      float total_prediction = mytree->test(testdata, i);
+      std::cout << "Test with Traindata:  ";
+      train_prediction = mytree->test(traindata, i);
+      std::cout << "Test with Testdata:   ";
+      total_prediction = mytree->test(testdata, i);
+      trainresults << i <<","<< total_prediction << "," << train_prediction << std::endl;
       if (total_prediction > best_prediction){
         best_prediction = total_prediction;
         best_leaf_size = i;
@@ -93,7 +106,10 @@ int main(){
     }
     std::cout << "best tree with leafsize: " << best_leaf_size << " and prediction: "<<best_prediction << std::endl;
     mytree->train(traindata, best_leaf_size);
+    std::cout << "Test with Testdata:\n";
     mytree->test(testdata, best_leaf_size);
+    std::cout << "Test with Traindata:\n";
+    mytree->test(traindata, best_leaf_size);
     mytree->save_for_visualisation(tree_for_visualisation_file_name);
   }
   else if(!find_optimum_leaf_size and !load_tree){
@@ -105,11 +121,12 @@ int main(){
 
 //load tree from file
   else if (load_tree){
-    Decisiontree* newtree = new Decisiontree();
-    newtree->load_from_file("tree.dat", data_file_name);
+    delete mytree;
+    Decisiontree* mytree = new Decisiontree();
+    mytree->load_from_file("tree.dat", data_file_name);
     std::string abc = "secondtree.dot";
-    newtree->save_for_visualisation(abc);
-    newtree->test(testdata, size_of_leaf);
+    mytree->save_for_visualisation(abc);
+    mytree->test(testdata, size_of_leaf);
   }
 
 //percent of all "+" labels in data
@@ -137,37 +154,12 @@ int main(){
   }
   std::cout << "same classification although no ethnicity: "<<(double)analyse_counter/data_to_analyse.size()*100<<"\%"<<std::endl;
 
-
   //make a copy of all analyse data with most frequent ethnicity
-  // int change_index{3};  //=3 for ethnicity 
-  prediction_befor_change = 'x';
-  prediction_after_change = 'x';
-  analyse_counter = 0;
-  std::string biggest_ethnicity{};
-  std::vector<Datapoint> data_to_analyse_2(a.begin()+ traindata.size()+testdata.size() ,a.end() );
-  std::map<std::string, int> ethnicity_counter;
-  for (auto i:Datapoint::cat_sets[change_index])    //all possible ethnicity in map with value 0
-    ethnicity_counter[i]=0;
 
-  for (auto i:a){                     //count how often each ethnicity occurs
-    ethnicity_counter[i.cat_features[change_index]]++;
-  }
-  int x = 0;
-  for (auto i:ethnicity_counter)                      //finds the most ethnicity
-    if (i.second > x){
-      x = i.second;
-      biggest_ethnicity=i.first;
-    }
-  for ( auto idata: data_to_analyse_2){               //compares all data with standart and new ethnicity
-    prediction_befor_change = mytree->predict(idata);
-    idata.cat_features[change_index] = biggest_ethnicity; 
-    prediction_after_change = mytree->predict(idata);
-    if (prediction_befor_change == prediction_after_change)
-      analyse_counter++;
-  }
-  std::cout << "same classification although set to biggest ethnicity: "<<(double)analyse_counter/data_to_analyse.size()*100<<"\%"<<std::endl;
-  std::cout << "biggest ethnicity: " << biggest_ethnicity <<" mit Häufigkeit: " << x<<std::endl;
+  std::vector<Datapoint> data_to_analyse_2(a.begin()+ traindata.size()+testdata.size() ,a.end() );
+  analyse_all_cat_features(a,data_to_analyse_2, mytree);
   delete mytree;
+
 
   if (save_file)    //save dataset    //until now not needed because we do not change any data
     save_dataset_to_file("abc.dat", a);
@@ -176,7 +168,46 @@ int main(){
   command.append(" -Tpdf -o ");
   command.append(visualized_tree_file_name);
   std::system(command.c_str());
+  trainresults.close();
   return 0;
+}
+
+
+
+void analyse_all_cat_features(const std::vector<Datapoint> &a, const std::vector<Datapoint> &data_to_analyse_2, Decisiontree* mytree){
+  char prediction{};
+  int analyse_counter{};
+  for (int change_index = 0; change_index<Datapoint::cat_feature_id.size(); change_index++){
+    analyse_counter = 0;
+    std::string biggest_ethnicity{};
+    // std::vector<Datapoint> data_to_analyse_2(a.begin()+ traindata.size()+testdata.size() ,a.end() );
+    std::map<std::string, int> ethnicity_counter;
+    std::map<std::string, std::vector<int>> data_indices_for_each_ethnicity{};
+    std::string selected_feature_name = Datapoint::cat_feature_id[change_index];
+    int indices = data_to_analyse_2.size();
+    std::cout << "\ncat_feature selected:" << selected_feature_name << std::endl;
+    for (auto i:Datapoint::cat_sets[change_index]){    //all possible ethnicity in map with value 0
+      ethnicity_counter[i]=0;
+    }
+    for (auto i:a){                     //count how often each ethnicity occurs
+      ethnicity_counter[i.cat_features[change_index]]++;
+    }
+    for (auto i:data_to_analyse_2){     //sort indices of all data in dependence of one feature
+      data_indices_for_each_ethnicity[i.cat_features[change_index]].push_back(indices);
+      indices++;
+    }
+    for (auto i:data_indices_for_each_ethnicity){   //all posible values of the feature
+      analyse_counter = 0;
+      for (auto index:i.second){                    //every datapoint with this flag
+        prediction = mytree->predict(a[index]);
+        if(prediction == a[index].label)
+          analyse_counter++;
+      }
+      std::cout << "same classification with " << selected_feature_name << ": " << i.first << "  " << (double)analyse_counter/i.second.size() * 100 <<"\%";
+      std::cout << " with total frequency in analyse data : " << i.second.size() << std::endl; 
+      std::cout << " with total frequency in data : " << ethnicity_counter[i.first] << std::endl; 
+    }//all values of one feature
+  }//all cat features
 }
 
 /* 
