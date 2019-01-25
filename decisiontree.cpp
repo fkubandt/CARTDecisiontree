@@ -325,7 +325,7 @@ void Decisiontree::save(std::string file_name){
 void Decisiontree::save_to_file(std::ofstream &file){
   file << depth <<"," << is_leaf <<"," << sep_feature_type <<"," << sep_feature_index;
   file  <<"," << sep_threshold <<"," << sep_category_flag <<"," << prediction;
-  file  <<"," << certainty << "," << dataslice.size() << gini_imp << std::endl;
+  file  <<"," << certainty << "," << dataslice.size() << "," << gini_imp << std::endl;
   if (!is_leaf){
     leftchild->save_to_file(file);
     rightchild->save_to_file(file);

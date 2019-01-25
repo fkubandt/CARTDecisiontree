@@ -58,9 +58,8 @@ class Decisiontree
     ~Decisiontree(); 
       //training
     public:
-    template<typename T> void train(std::vector<int> data_indices, T exit_condition=0.);
-    template<typename T> void train(T exit_condition=0.);
-
+    template<typename T> void train(T exit_condition = 0.);
+    template<typename T> void train(std::vector<int> data_indices, T exit_condition = 0.);
     private:
     float gini_impurity(std::vector<int> data_indices) const;
     float max_information_gain(std::vector<int> data_indices);
@@ -123,6 +122,10 @@ void Decisiontree::train(std::vector<int> data_indices, T exit_condition){
   /* 
    * builds the tree, seperating criterion is the information gain for a split. 
    *                                                                           */
+  if (leftchild!=nullptr)
+    delete leftchild;
+  if (rightchild!=nullptr)
+    delete rightchild;
   if (testing)
     std::cout <<std::endl << "start training on depth " << depth << " ....." << std::endl;
   gini_imp = gini_impurity(data_indices);

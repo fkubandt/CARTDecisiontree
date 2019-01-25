@@ -24,8 +24,8 @@ double train_percent = 0.7;
 double test_percent = 0.2;
 double analyse_percent = 0.1;
 int Datapoint::nr_datapoints{700};  //Number of Datapoints just to boost the code
-std::string data_file_name = "Data/shuffled_credit_approval_australia.dat";
-// std::string data_file_name = "Data/adult_data.csv";  //set with 40000 data
+// std::string data_file_name = "Data/shuffled_credit_approval_australia.dat";
+std::string data_file_name = "Data/shuffled_5000_adult_data.dat";  //set with 5000 data
 std::string tree_file_name = "tree.dat";
 std::string tree_for_visualisation_file_name = "visualisierung.dot";
 std::string visualized_tree_file_name = "tree.pdf";
@@ -34,6 +34,9 @@ int change_index{4};  //=4 for ethnicity
 const char Decisiontree::label = '+';
 
 void analyse_all_cat_features(const std::vector<Datapoint> &a, const std::vector<Datapoint> &data_to_analyse_2, Decisiontree* mytree);
+template<typename T> T find_optimum_tree( const T start_value, const T end_value, const T step_size ,Decisiontree* mytree, std::vector<int> &traindata, 
+                                          std::vector<int> &testdata, std::ofstream &trainresults, const std::string tree_file_name, 
+                                          const std::string tree_for_visualisation_file_name);
 
 int main(){
   // char prediction{'x'};
@@ -79,41 +82,22 @@ int main(){
   
   std::ofstream trainresults;
   trainresults.open(train_result_file_name);
-  
+
 
   if (find_optimum_leaf_size and !load_tree){
-    // for (int i = begin_leaf_size; i<end_leaf_size; i++){
-    for (int i = end_leaf_size; i>=begin_leaf_size; i--){
-      mytree->train(traindata, i);
+    // find_optimum_tree(0., 0.05, 0.001, mytree, traindata, testdata, trainresults, tree_file_name, tree_for_visualisation_file_name);
+    find_optimum_tree(1, 50, 1, mytree, traindata, testdata, trainresults, tree_file_name, tree_for_visualisation_file_name);
 
-      if (testing){
-        float gini = mytree->gini_impurity_of_all_leaves();
-        //std::cout << "gini at node " << mytree->gini_imp << std::endl;
-        std::cout << "gini of all leaves " << gini << std::endl;
-        std::cout << "trained" << std::endl;  }
-
-      std::cout << "Test with Traindata:  ";
-      train_prediction = mytree->test(traindata, i);
-      std::cout << "Test with Testdata:   ";
-      total_prediction = mytree->test(testdata, i);
-      trainresults << i <<","<< total_prediction << "," << train_prediction << std::endl;
-      if (total_prediction > best_prediction){
-        best_prediction = total_prediction;
-        best_leaf_size = i;
-        mytree->save(tree_file_name);
-        mytree->save_for_visualisation(tree_for_visualisation_file_name);
-      }
-    }
-    std::cout << "best tree with leafsize: " << best_leaf_size << " and prediction: "<<best_prediction << std::endl;
-    mytree->train(traindata, best_leaf_size);
-    std::cout << "Test with Testdata:\n";
-    mytree->test(testdata, best_leaf_size);
-    std::cout << "Test with Traindata:\n";
-    mytree->test(traindata, best_leaf_size);
-    mytree->save_for_visualisation(tree_for_visualisation_file_name);
+    // std::cout << "best tree with leafsize: " << best_leaf_size << " and prediction: "<<best_prediction << std::endl;
+    // mytree->train(traindata, best_leaf_size);
+    // std::cout << "Test with Testdata:\n";
+    // mytree->test(testdata, best_leaf_size);
+    // std::cout << "Test with Traindata:\n";
+    // mytree->test(traindata, best_leaf_size);
+    // mytree->save_for_visualisation(tree_for_visualisation_file_name);
   }
   else if(!find_optimum_leaf_size and !load_tree){
-    mytree->train(traindata, size_of_leaf);
+    mytree->train(traindata, 0.04);
     mytree->test(testdata, size_of_leaf);
     mytree->save(tree_file_name);
     mytree->save_for_visualisation(tree_for_visualisation_file_name);
@@ -208,6 +192,44 @@ void analyse_all_cat_features(const std::vector<Datapoint> &a, const std::vector
       std::cout << " with total frequency in data : " << ethnicity_counter[i.first] << std::endl; 
     }//all values of one feature
   }//all cat features
+}
+
+template<typename T>
+T find_optimum_tree(const T start_value, const T end_value, T step_size, Decisiontree* mytree, std::vector<int> &traindata, 
+                    std::vector<int> &testdata, std::ofstream &trainresults, const std::string tree_file_name, 
+                    const std::string tree_for_visualisation_file_name){
+  T best_parameter{};
+  float best_prediction{0.};
+  float train_prediction, total_prediction;
+  for (T i = start_value; i<end_value; i+=step_size){
+    std::cout << "Schleifenwert für i: "<<i <<" "<<typeid(i).name() << std::endl;
+    mytree->train(traindata, i);
+    if (testing){
+      float gini = mytree->gini_impurity_of_all_leaves();
+      //std::cout << "gini at node " << mytree->gini_imp << std::endl;
+      std::cout << "gini of all leaves " << gini << std::endl;
+      std::cout << "trained" << std::endl;  }
+
+    std::cout << "Test with Traindata:  ";
+    train_prediction = mytree->test(traindata, i);
+    std::cout << "Test with Testdata:   ";
+    total_prediction = mytree->test(testdata, i);
+    trainresults << i <<","<< total_prediction << "," << train_prediction << std::endl;
+    if (total_prediction >= best_prediction){
+      best_prediction = total_prediction;
+      best_parameter = i;
+      mytree->save(tree_file_name);
+      mytree->save_for_visualisation(tree_for_visualisation_file_name);
+    }
+  }
+  std::cout << "best tree with parameter: " << best_parameter << " and prediction: "<<best_prediction << std::endl;
+  // mytree->train(traindata, best_leaf_size);
+  // std::cout << "Test with Testdata:\n";
+  // mytree->test(testdata, best_leaf_size);
+  // std::cout << "Test with Traindata:\n";
+  // mytree->test(traindata, best_leaf_size);
+  // mytree->save_for_visualisation(tree_for_visualisation_file_name);
+
 }
 
 /* 
