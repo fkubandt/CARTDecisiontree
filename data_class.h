@@ -25,6 +25,7 @@ class Datapoint
   std::vector<double> num_features{};
   std::vector<std::string> cat_features{};
   char label{};
+  char prediction{'x'};
 
   static std::vector<std::set<std::string>> cat_sets;   // set with all possible cat values
   static std::vector<std::set<float>> num_sets;         // set with all possible num values
@@ -42,6 +43,8 @@ class Datapoint
   //sets all features of one Datapoint
   void set_features(std::ifstream &inputFile, const std::string &num, const bool set_label,
                      int data_counter, std::vector<std::string> &feature_types);
+  void save_features_values_to_file(std::ofstream &file);
+  void save_feature_names_to_file(std::ofstream &file);
 };
 
 std::vector<Datapoint> create_data(const std::string file_name, bool load_label); //use this one in the main function!!
