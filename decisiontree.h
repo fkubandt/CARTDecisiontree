@@ -72,8 +72,8 @@ class Decisiontree
     bool is_in_left_child(const Datapoint &data);
     bool handle_missing_data(const Datapoint &data);
     public:
-    char predict(const Datapoint &data);
-    char predict(const Datapoint &data, float &certainty_);
+    char predict(Datapoint &data);
+    char predict(Datapoint &data, float &certainty_);
 
       //data im/export
     public:
