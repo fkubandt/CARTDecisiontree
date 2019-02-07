@@ -1,3 +1,19 @@
+/*
+ * *************************************************************
+ *  Filename:     data_class.cpp
+ *
+ *  Description:  Data Class for Decision Tree
+ *
+ *  Version:      1.0
+ *  Created:      11.12.2019
+ *  Revision:     None
+ *  Compile:      Makefile, g++
+ *
+ *  Author:       Frederike Kubandt, Maximilian Märcz
+ *  Organization: Goehte University Frankfurt
+ * ************************************************************* 
+*/
+
 #ifndef _DATA_CLASS_H_  
 #define _DATA_CLASS_H_      //guard
 #include<iostream>

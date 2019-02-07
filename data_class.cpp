@@ -1,3 +1,18 @@
+/*
+ * *************************************************************
+ *  Filename:     data_class.h
+ *
+ *  Description:  Data Class for Decision Tree
+ *
+ *  Version:      1.0
+ *  Created:      11.12.2019
+ *  Revision:     None
+ *  Compile:      Makefile, g++
+ *
+ *  Author:       Frederike Kubandt, Maximilian Märcz
+ *  Organization: Goehte University Frankfurt
+ * ************************************************************* 
+*/
 
 #include"data_class.h"
 

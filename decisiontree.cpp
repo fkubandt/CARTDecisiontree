@@ -414,7 +414,7 @@ void Decisiontree::load_from_file(std::string file_name_tree, std::string file_n
   std::string line;
   std::getline(file, line);
   int counter = 0;
-  this->data = create_data(file_name_data, true);
+  this->data = create_dataset(file_name_data, true);
   this->load_node_from_file(file, counter);
   file.close();
 }
@@ -499,6 +499,6 @@ float Decisiontree::test(std::vector<int> &testdata, const int leafsize){
         counter++;
     }
     double total_prediction = (double)counter/testdata.size();
-    std::cout << "right labled: " << total_prediction *100<<"\%"<< " with leafsize: " << leafsize << std::endl;
+    std::cout << "correcly labled: " << total_prediction *100<<"\%"<< " with leafsize: " << leafsize << std::endl;
     return total_prediction;
 }

@@ -10,22 +10,23 @@
 #include<set>
 #include<map>
 #include<numeric>
-// #include<utility>
+
 
 
 bool load_tree = false;
 bool save_file = false;
-bool find_optimum_leaf_size = true;
-int size_of_leaf = 20;
+bool full_analysis = false;
+bool find_optimum_leaf_size = false; //if set to true, validation dataset can't be empty!
+int size_of_leaf = 9;
 int begin_leaf_size = 1;
 int end_leaf_size = 50;
 bool testing = false;
 double train_percent = 0.7;
-double test_percent = 0.2;
-double analyse_percent = 0.1;
+double validation_percent = 0.;
+double test_percent = 0.3;
 int Datapoint::nr_datapoints{700};  //Number of Datapoints just to boost the code
-// std::string data_file_name = "Data/shuffled_credit_approval_australia.dat";
-std::string data_file_name = "Data/shuffled_5000_adult_data.dat";  //set with 5000 data
+std::string data_file_name = "Data/shuffled_credit_approval_australia.dat";
+//std::string data_file_name = "Data/shuffled_5000_adult_data.dat";  //set with 5000 data
 std::string tree_file_name = "tree.dat";
 std::string tree_for_visualisation_file_name = "visualisierung.dot";
 std::string visualized_tree_file_name = "tree.pdf";
@@ -33,15 +34,22 @@ std::string train_result_file_name = "results.txt";
 int change_index{4};  //=4 for ethnicity 
 const char Decisiontree::label = '+';
 
+
+
+// methods to use in main function for analysis
 void analyse_all_cat_features(const std::vector<Datapoint> &a, const std::vector<Datapoint> &data_to_analyse_2, Decisiontree* mytree);
 template<typename T> T find_optimum_tree( const T start_value, const T end_value, const T step_size ,Decisiontree* mytree, std::vector<int> &traindata, 
-                                          std::vector<int> &testdata, std::ofstream &trainresults, const std::string tree_file_name, 
+                                          std::vector<int> &validationdata, std::ofstream &trainresults, const std::string tree_file_name, 
                                           const std::string tree_for_visualisation_file_name);
 
 int main(){
-  // char prediction{'x'};
-  // int counter{0};
-  if (train_percent+test_percent+analyse_percent > 1){
+  
+  //load data
+  auto a = create_dataset(data_file_name, true);
+  int y = a.size();
+
+    // make sure all values are set correctly
+  if (train_percent+validation_percent+test_percent > 1){
     std::cout << "Error with percent of data split\n";
     return 1; }
   if (size_of_leaf == 0){
@@ -49,23 +57,27 @@ int main(){
     std::cin >> size_of_leaf;
     std::cout << std::endl;
   }
+  if (find_optimum_leaf_size and validation_percent*a.size()<1){
+    std::cout << "to find optimal hyperparameters a validation set is needed. "<<
+       "Please set a percentage of data that should be used as validation set (maximum allowed " << 1-train_percent <<"): ";
+    std::cin >> validation_percent;
+    std::cout << std::endl;
+    test_percent = train_percent - validation_percent;
+  }
 
-  auto a = create_dataset(data_file_name, true);
-  int y = a.size();
-  // for (int i = 700; i<y;i++)
-  //   a.pop_back();
-
+  //partition data into trainingset, validationset and testset
   int size_traindata = (int)(train_percent*a.size());
-  int size_testdata = (int)(test_percent*a.size());
-  int size_analysedata = (int)(analyse_percent*a.size()) + 1;
+  int size_validationdata = (int)(validation_percent*a.size());
+  int size_testdata = (int)(test_percent*a.size()) + 1;
   std::vector<int> traindata(size_traindata);
+  std::vector<int>validationdata(size_validationdata);
   std::vector<int>testdata(size_testdata);
-  std::vector<int>analysedata(size_analysedata);
   std::iota(traindata.begin(), traindata.end(), 0);
-  std::iota(testdata.begin(), testdata.end(), size_traindata);
-  std::iota(analysedata.begin(), analysedata.end(), size_testdata+size_traindata);
+  std::iota(validationdata.begin(), validationdata.end(), size_traindata);
+  std::iota(testdata.begin(), testdata.end(), size_validationdata+size_traindata);
 
-  std::cout << a.size() << " Test " << size_traindata << " "<<size_testdata << " "<<size_analysedata<< std::endl;
+  
+  //std::cout << a.size() << " Test " << size_traindata << " "<<size_validationdata << " "<<size_testdata<< std::endl;
 
   if (testing){
     for (auto i:Datapoint::cat_sets){
@@ -83,26 +95,27 @@ int main(){
   std::ofstream trainresults;
   trainresults.open(train_result_file_name);
 
-
+  //optimize 
   if (find_optimum_leaf_size and !load_tree){
-    // find_optimum_tree(0., 0.05, 0.001, mytree, traindata, testdata, trainresults, tree_file_name, tree_for_visualisation_file_name);
-    find_optimum_tree(1, 50, 1, mytree, traindata, testdata, trainresults, tree_file_name, tree_for_visualisation_file_name);
-
-    // std::cout << "best tree with leafsize: " << best_leaf_size << " and prediction: "<<best_prediction << std::endl;
-    // mytree->train(traindata, best_leaf_size);
-    // std::cout << "Test with Testdata:\n";
-    // mytree->test(testdata, best_leaf_size);
-    // std::cout << "Test with Traindata:\n";
-    // mytree->test(traindata, best_leaf_size);
-    // mytree->save_for_visualisation(tree_for_visualisation_file_name);
+    // find_optimum_tree(0., 0.05, 0.001, mytree, traindata, validationdata, trainresults, tree_file_name, tree_for_visualisation_file_name);
+    find_optimum_tree(1, 50, 1, mytree, traindata, validationdata, trainresults, tree_file_name, tree_for_visualisation_file_name);
+    if (testing){
+    std::cout << "best tree with leafsize: " << best_leaf_size << " and prediction: "<<best_prediction << std::endl;
+    mytree->train(traindata, best_leaf_size);
+    std::cout << "Test with validationdata:\n";
+    mytree->test(validationdata, best_leaf_size);
+    std::cout << "Test with Traindata:\n";
+    mytree->test(traindata, best_leaf_size);
+    mytree->save_for_visualisation(tree_for_visualisation_file_name);
+    }
   }
+  //train and test 
   else if(!find_optimum_leaf_size and !load_tree){
-    mytree->train(traindata, 0.04);
+    mytree->train(traindata, size_of_leaf);  // train tree with manually set exit condition
     mytree->test(testdata, size_of_leaf);
     mytree->save(tree_file_name);
     mytree->save_for_visualisation(tree_for_visualisation_file_name);
   }
-
 //load tree from file
   else if (load_tree){
     delete mytree;
@@ -110,25 +123,27 @@ int main(){
     mytree->load_from_file("tree.dat", data_file_name);
     std::string abc = "secondtree.dot";
     mytree->save_for_visualisation(abc);
-    mytree->test(testdata, size_of_leaf);
+    mytree->test(validationdata, size_of_leaf);
   }
+  else std::cout << "conflicting request, tree cannot be optimized and loaded simultaneously." << std::endl;
 
-//percent of all "+" labels in data
+//percent of all "+" labels in data, needed to rate the performance of the tree
   int counter = 0;
   for(auto i:a)
     if (i.label == '+')
       counter++;
-  std::cout << (double)counter/a.size() *100<< "% of data are labeld with '+'\n";
+  std::cout << (double)counter/a.size() *100<< "% of total data are labeld with '+', in a set of " << a.size() << " datapoints \n";
 
 
 
 
   //make a copy of all analyse data without ethnicity
   // int change_index{3};  //=3 for ethnicity 
+  if (full_analysis){
   char prediction_befor_change{'x'};
   char prediction_after_change{'x'};
   int analyse_counter{0};
-  std::vector<Datapoint> data_to_analyse(a.begin()+ traindata.size()+testdata.size() ,a.end() );
+  std::vector<Datapoint> data_to_analyse(a.begin()+ traindata.size()+validationdata.size() ,a.end() );
   for ( auto idata: data_to_analyse){
     prediction_befor_change = mytree->predict(idata);
     idata.cat_features[change_index] = "?"; //stands for no information
@@ -140,10 +155,10 @@ int main(){
 
   //make a copy of all analyse data with most frequent ethnicity
 
-  std::vector<Datapoint> data_to_analyse_2(a.begin()+ traindata.size()+testdata.size() ,a.end() );
+  std::vector<Datapoint> data_to_analyse_2(a.begin()+ traindata.size()+validationdata.size() ,a.end() );
   analyse_all_cat_features(a,data_to_analyse_2, mytree);
   delete mytree;
-
+  }
 
   if (save_file)    //save dataset    //until now not needed because we do not change any data
     save_dataset_to_file("abc.dat", a);
@@ -164,7 +179,7 @@ void analyse_all_cat_features(const std::vector<Datapoint> &a, const std::vector
   for (int change_index = 0; change_index<Datapoint::cat_feature_id.size(); change_index++){
     analyse_counter = 0;
     std::string biggest_ethnicity{};
-    // std::vector<Datapoint> data_to_analyse_2(a.begin()+ traindata.size()+testdata.size() ,a.end() );
+    // std::vector<Datapoint> data_to_analyse_2(a.begin()+ traindata.size()+validationdata.size() ,a.end() );
     std::map<std::string, int> ethnicity_counter;
     std::map<std::string, std::vector<int>> data_indices_for_each_ethnicity{};
     std::string selected_feature_name = Datapoint::cat_feature_id[change_index];
@@ -196,7 +211,7 @@ void analyse_all_cat_features(const std::vector<Datapoint> &a, const std::vector
 
 template<typename T>
 T find_optimum_tree(const T start_value, const T end_value, T step_size, Decisiontree* mytree, std::vector<int> &traindata, 
-                    std::vector<int> &testdata, std::ofstream &trainresults, const std::string tree_file_name, 
+                    std::vector<int> &validationdata, std::ofstream &trainresults, const std::string tree_file_name, 
                     const std::string tree_for_visualisation_file_name){
   T best_parameter{};
   float best_prediction{0.};
@@ -212,8 +227,8 @@ T find_optimum_tree(const T start_value, const T end_value, T step_size, Decisio
 
     std::cout << "Test with Traindata:  ";
     train_prediction = mytree->test(traindata, i);
-    std::cout << "Test with Testdata:   ";
-    total_prediction = mytree->test(testdata, i);
+    std::cout << "Test with validationdata:   ";
+    total_prediction = mytree->test(validationdata, i);
     trainresults << i <<","<< total_prediction << "," << train_prediction << std::endl;
     if (total_prediction >= best_prediction){
       best_prediction = total_prediction;
@@ -224,8 +239,8 @@ T find_optimum_tree(const T start_value, const T end_value, T step_size, Decisio
   }
   std::cout << "best tree with parameter: " << best_parameter << " and prediction: "<<best_prediction << std::endl;
   // mytree->train(traindata, best_leaf_size);
-  // std::cout << "Test with Testdata:\n";
-  // mytree->test(testdata, best_leaf_size);
+  // std::cout << "Test with validationdata:\n";
+  // mytree->test(validationdata, best_leaf_size);
   // std::cout << "Test with Traindata:\n";
   // mytree->test(traindata, best_leaf_size);
   // mytree->save_for_visualisation(tree_for_visualisation_file_name);
