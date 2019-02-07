@@ -29,7 +29,7 @@ std::string data_file_name = "Data/shuffled_credit_approval_australia.dat";
 //std::string data_file_name = "Data/shuffled_5000_adult_data.dat";  //set with 5000 data
 std::string tree_file_name = "tree.dat";
 std::string tree_for_visualisation_file_name = "visualisierung.dot";
-std::string visualized_tree_file_name = "tree.pdf";
+std::string visualized_tree_file_name = "tree_60000_leaf_180.pdf";
 std::string train_result_file_name = "results.txt";
 int change_index{4};  //=4 for ethnicity 
 const char Decisiontree::label = '+';
@@ -120,10 +120,10 @@ int main(){
   else if (load_tree){
     delete mytree;
     Decisiontree* mytree = new Decisiontree();
-    mytree->load_from_file("tree.dat", data_file_name);
-    std::string abc = "secondtree.dot";
-    mytree->save_for_visualisation(abc);
-    mytree->test(validationdata, size_of_leaf);
+    mytree->load_from_file("result600/tree_op_gini.dat", data_file_name);
+    // std::string abc = "secondtree.dot";
+    // mytree->save_for_visualisation(abc);
+    mytree->test(testdata, size_of_leaf);
   }
   else std::cout << "conflicting request, tree cannot be optimized and loaded simultaneously." << std::endl;
 
@@ -134,8 +134,28 @@ int main(){
       counter++;
   std::cout << (double)counter/a.size() *100<< "% of total data are labeld with '+', in a set of " << a.size() << " datapoints \n";
 
+  std::vector<Datapoint> b_test(a.begin()+traindata.size(),a.begin()+traindata.size()+testdata.size());
+  std::vector<Datapoint> b_analyse(a.begin()+traindata.size()+analysedata.size(),a.end());
 
+  for (auto i:testdata){
+    mytree->predict(a[i]);
+  }
+  for (auto i:analysedata){
+    mytree->predict(a[i]);
+  }
+  // std::cout << "blub" << mytree->predict(a[0]) << std::endl;
+  // std::cout << "Testvorhersage: " << a[0].prediction << std::endl;
+  std::ofstream prediction_file;
+  prediction_file.open("test_data_prediction.dat");
+  a[0].save_feature_names_to_file(prediction_file);
+  for (auto i:testdata){
+    a[i].save_features_values_to_file(prediction_file);
+  }
+  for (auto i:analysedata)  
+    a[i].save_features_values_to_file(prediction_file);  
 
+  //save_dataset_to_file("test_data_prediction.dat", b_test);
+  // save_dataset_to_file("analyse_data_prediction.dat", b_analyse);
 
   //make a copy of all analyse data without ethnicity
   // int change_index{3};  //=3 for ethnicity 
@@ -173,10 +193,15 @@ int main(){
 
 
 
-void analyse_all_cat_features(const std::vector<Datapoint> &a, const std::vector<Datapoint> &data_to_analyse_2, Decisiontree* mytree){
+void analyse_all_cat_features(std::vector<Datapoint> &a, const std::vector<Datapoint> &data_to_analyse_2, Decisiontree* mytree){
   char prediction{};
   int analyse_counter{};
-  for (int change_index = 0; change_index<Datapoint::cat_feature_id.size(); change_index++){
+  std::vector<int> index_vec{};
+  index_vec.push_back(0);
+  index_vec.push_back(4);
+  // for (int change_index = 0; change_index<Datapoint::cat_feature_id.size(); change_index++){
+  // for (int change_index = 5; change_index<7; change_index++){
+    for (auto change_index:index_vec){
     analyse_counter = 0;
     std::string biggest_ethnicity{};
     // std::vector<Datapoint> data_to_analyse_2(a.begin()+ traindata.size()+validationdata.size() ,a.end() );
@@ -202,9 +227,12 @@ void analyse_all_cat_features(const std::vector<Datapoint> &a, const std::vector
         if(prediction == a[index].label)
           analyse_counter++;
       }
-      std::cout << "same classification with " << selected_feature_name << ": " << i.first << "  " << (double)analyse_counter/i.second.size() * 100 <<"\%";
-      std::cout << " with total frequency in analyse data : " << i.second.size() << std::endl; 
-      std::cout << " with total frequency in data : " << ethnicity_counter[i.first] << std::endl; 
+      // std::cout << "same classification with " << selected_feature_name << ": " << i.first << "  " << (double)analyse_counter/i.second.size() * 100 <<"\%";
+      // std::cout << " with total frequency in analyse data : " << i.second.size() << std::endl; 
+      // std::cout << " with total frequency in data : " << ethnicity_counter[i.first] << std::endl; 
+      std::cout <<  i.first << "  " << (double)analyse_counter/i.second.size() <<" ";
+      std::cout << i.second.size() << std::endl; 
+      // std::cout << " with total frequency in data : " << ethnicity_counter[i.first] << std::endl; 
     }//all values of one feature
   }//all cat features
 }

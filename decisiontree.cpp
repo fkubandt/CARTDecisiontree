@@ -248,9 +248,11 @@ void Decisiontree::create_leaf(std::vector<int> data_indices){
 /**
  * predict the label
 **/
-char Decisiontree::predict(const Datapoint &data){
+char Decisiontree::predict(Datapoint &data){
   if (is_leaf){
-    return prediction;
+    data.prediction = this->prediction;
+    //std::cout << data.prediction << "     " << this->prediction << "\n";
+    return this->prediction;
   }
   else{
     if (handle_missing_data(data))
@@ -262,10 +264,11 @@ char Decisiontree::predict(const Datapoint &data){
   }
 }
 
-char Decisiontree::predict(const Datapoint &data, float &certainty_){
+char Decisiontree::predict(Datapoint &data, float &certainty_){
   if (is_leaf){
-    certainty_ = certainty;
-    return prediction;
+    data.prediction = this->prediction;
+    certainty_ = this->certainty;
+    return this->prediction;
   }
   else{
     if (is_in_left_child(data))

@@ -70,6 +70,35 @@ void Datapoint::set_features(std::ifstream &inputFile, const std::string &num, c
    cat_features.shrink_to_fit();
  }
 
+void Datapoint::save_features_values_to_file(std::ofstream &file){
+    for(auto j:num_features)
+      file << j << ",";
+    for (auto j : cat_features)
+      file << j << ",";
+    file << label << "," << prediction <<std::endl;
+}
+
+
+void Datapoint::save_feature_names_to_file(std::ofstream &file){
+  file << std::endl;
+  file << Datapoint::nr_features << std::endl;
+  file << Datapoint::num_feature_id[0];
+  for(int i = 1; i<Datapoint::num_feature_id.size(); i++){
+    file << "," << Datapoint::num_feature_id[i];
+  }
+  for(int i = 0; i<Datapoint::Datapoint::cat_feature_id.size(); i++){
+    file << "," << Datapoint::Datapoint::cat_feature_id[i];
+  }
+  file << "," << "label,prediction" << std::endl;
+  for (int i = 0;i<Datapoint::num_feature_id.size(); i++)
+    file << "num,";
+  for (int i = 0; i<Datapoint::Datapoint::cat_feature_id.size(); i++)
+    file << "cat,";
+  file << "class,class\n";
+
+}
+
+
 
 /**
  * returns vec of Datapoints loaded from file and sets the sets with all possible values
@@ -171,18 +200,18 @@ void save_dataset_to_file(const std::string file_name, const std::vector<Datapoi
   for(int i = 0; i<Datapoint::Datapoint::cat_feature_id.size(); i++){
     file << "," << Datapoint::Datapoint::cat_feature_id[i];
   }
-  file << "," << "label" <<std::endl;
+  file << "," << "label,prediction" << std::endl;
   for (int i = 0;i<Datapoint::num_feature_id.size(); i++)
     file << "num,";
   for (int i = 0; i<Datapoint::Datapoint::cat_feature_id.size(); i++)
     file << "cat,";
-  file << "class\n";
+  file << "class,class\n";
   for(auto i:data){
     for(auto j:i.num_features)
       file << j << ",";
     for (auto j : i.cat_features)
       file << j << ",";
-    file << i.label << std::endl;
+    file << i.label << "," << i.prediction <<std::endl;
   }
   file.close();
 }
