@@ -37,7 +37,7 @@ const char Decisiontree::label = '+';
 
 
 // methods to use in main function for analysis
-void analyse_all_cat_features(const std::vector<Datapoint> &a, const std::vector<Datapoint> &data_to_analyse_2, Decisiontree* mytree);
+void analyse_all_cat_features(std::vector<Datapoint> &a, const std::vector<Datapoint> &data_to_analyse_2, Decisiontree* mytree);
 template<typename T> T find_optimum_tree( const T start_value, const T end_value, const T step_size ,Decisiontree* mytree, std::vector<int> &traindata, 
                                           std::vector<int> &validationdata, std::ofstream &trainresults, const std::string tree_file_name, 
                                           const std::string tree_for_visualisation_file_name);
@@ -134,13 +134,13 @@ int main(){
       counter++;
   std::cout << (double)counter/a.size() *100<< "% of total data are labeld with '+', in a set of " << a.size() << " datapoints \n";
 
-  std::vector<Datapoint> b_test(a.begin()+traindata.size(),a.begin()+traindata.size()+testdata.size());
-  std::vector<Datapoint> b_analyse(a.begin()+traindata.size()+analysedata.size(),a.end());
+  std::vector<Datapoint> b_test(a.begin()+traindata.size(),a.begin()+traindata.size()+validationdata.size());
+  std::vector<Datapoint> b_analyse(a.begin()+traindata.size()+testdata.size(),a.end());
 
-  for (auto i:testdata){
+  for (auto i:validationdata){
     mytree->predict(a[i]);
   }
-  for (auto i:analysedata){
+  for (auto i:testdata){
     mytree->predict(a[i]);
   }
   // std::cout << "blub" << mytree->predict(a[0]) << std::endl;
@@ -148,10 +148,10 @@ int main(){
   std::ofstream prediction_file;
   prediction_file.open("test_data_prediction.dat");
   a[0].save_feature_names_to_file(prediction_file);
-  for (auto i:testdata){
+  for (auto i:validationdata){
     a[i].save_features_values_to_file(prediction_file);
   }
-  for (auto i:analysedata)  
+  for (auto i:testdata)  
     a[i].save_features_values_to_file(prediction_file);  
 
   //save_dataset_to_file("test_data_prediction.dat", b_test);
